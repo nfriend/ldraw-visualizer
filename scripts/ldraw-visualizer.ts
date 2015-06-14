@@ -79,6 +79,6 @@ module LdrawVisualizer {
 	}
 
 	function render() {
-		renderer.render(scene, camera);
+		renderer.render(scene, camera); 
 	}
 }
