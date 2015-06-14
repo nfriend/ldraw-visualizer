@@ -11,10 +11,19 @@ module.exports = function (grunt) {
 					keepalive: true
 				}
 			}
+		},
+		watch: {
+			all: {
+				options: {
+					livereload: true
+				},
+				files: ['./scripts/**/*.js']
+			}
 		}
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-connect');
+	grunt.loadNpmTasks('grunt-contrib-watch');
 
 	grunt.registerTask('default', ['connect']);
 };
