@@ -6553,4 +6553,4 @@ peerConnection.setRemoteDescription(mozSessionDescription, function () {
 }, function (error) { return console.log('Error setting remote description: ' + error +
     "; offer.sdp=" + offer.sdp); });
 var wkPeerConnection = new webkitRTCPeerConnection(config, constraints);
-//# sourceMappingURL=ldraw-visualizer-0.0.1.js.map
+//# sourceMappingURL=ldraw-visualizer.js.map

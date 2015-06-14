@@ -21,7 +21,7 @@
 	"showOutput": "silent",
 	
 	// args is the HelloWorld program to compile.
-	"args": ["--out", "./scripts/ldraw-visualizer-0.0.1.js"],
+	"args": ["--out", "./scripts/ldraw-visualizer.js"],
 	
 	// use the standard tsc problem matcher to find compile problems
 	// in the output.
