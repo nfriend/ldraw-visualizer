@@ -30,7 +30,7 @@ module.exports = function (grunt) {
 				livereload: true
 			},
 			js: {
-				files: ['./scripts/**/*.js', './styles/**/*.less']
+				files: ['./scripts/**/*.js', './styles/**/*.less', './**/*.html']
 			}
 		}
 	});

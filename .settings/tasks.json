@@ -26,7 +26,6 @@
 	// use the standard tsc problem matcher to find compile problems
 	// in the output.
 	"problemMatcher": "$tsc"
-	
 }
 
 // A task runner that calls the Typescipt compiler (tsc) and 
