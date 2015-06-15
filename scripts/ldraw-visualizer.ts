@@ -23,15 +23,72 @@ module LdrawVisualizer {
 		scene = new THREE.Scene();
 		scene.fog = new THREE.FogExp2(0x111111, 0.002);
 
-		var geometry = new THREE.BoxGeometry(50, 50, 50);
-		var material = new THREE.MeshLambertMaterial({ color: 0xff0000, shading: THREE.FlatShading });
-		var cube = new THREE.Mesh(geometry, material);
-		cube.position.x = 0;
-		cube.position.y = 0;
-		cube.position.z = 0;
-		cube.updateMatrix();
-		cube.matrixAutoUpdate = false;
+		var cubeGeometry = new THREE.BoxGeometry(96, 65, 160);
+		var cylinderGeometry = new THREE.CylinderGeometry(12, 12, 9, 32);
+		var material = new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.FlatShading });
+		
+		// just for looks.
+		
+		var cube = new THREE.Mesh(cubeGeometry, material);
 		scene.add(cube);
+		
+		var cylinder = new THREE.Mesh(cylinderGeometry, material);
+		cylinder.geometry.mergeVertices();
+		cylinder.position.y = 37;
+		cylinder.position.x = 50 - 24;
+		cylinder.position.z = 50 - 30;
+		scene.add(cylinder);
+		
+		cylinder = new THREE.Mesh(cylinderGeometry, material);
+		cylinder.geometry.mergeVertices();
+		cylinder.position.y = 37;
+		cylinder.position.x = 50 - 72;
+		cylinder.position.z = 50 - 30;
+		scene.add(cylinder);
+		
+		cylinder = new THREE.Mesh(cylinderGeometry, material);
+		cylinder.geometry.mergeVertices();
+		cylinder.position.y = 37;
+		cylinder.position.x = 50 - 24;
+		cylinder.position.z = 50 + 6;
+		scene.add(cylinder);
+		
+		cylinder = new THREE.Mesh(cylinderGeometry, material);
+		cylinder.geometry.mergeVertices();
+		cylinder.position.y = 37;
+		cylinder.position.x = 50 - 72;
+		cylinder.position.z = 50 + 6;
+		scene.add(cylinder);
+		
+		cylinder = new THREE.Mesh(cylinderGeometry, material);
+		cylinder.geometry.mergeVertices();
+		cylinder.position.y = 37;
+		cylinder.position.x = 50 - 24;
+		cylinder.position.z = 50 - 66;
+		scene.add(cylinder);
+		
+		cylinder = new THREE.Mesh(cylinderGeometry, material);
+		cylinder.geometry.mergeVertices();
+		cylinder.position.y = 37;
+		cylinder.position.x = 50 - 72;
+		cylinder.position.z = 50 - 66;
+		scene.add(cylinder);
+		
+		cylinder = new THREE.Mesh(cylinderGeometry, material);
+		cylinder.geometry.mergeVertices();
+		cylinder.position.y = 37;
+		cylinder.position.x = 50 - 24;
+		cylinder.position.z = 50 - 102;
+		scene.add(cylinder);
+		
+		cylinder = new THREE.Mesh(cylinderGeometry, material);
+		cylinder.geometry.mergeVertices();
+		cylinder.position.y = 37;
+		cylinder.position.x = 50 - 72;
+		cylinder.position.z = 50 - 102;
+		scene.add(cylinder);
+		
+		
 		
 		// for (var i = 0; i < 500; i++) {
 		// 	var mesh = new THREE.Mesh(geometry, material);
