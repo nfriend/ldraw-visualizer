@@ -1,4 +1,11 @@
+/// <reference path="./file-service/file-service.ts" />
+
 module LdrawVisualizer {
+	
+	FileService.GetPart('fake', (part: FileService.PartFile) => {
+		console.log(part);
+	});
+	
 	if (!Detector.webgl) Detector.addGetWebGLMessage();
 
 	var container;

@@ -1,5 +1,350 @@
+/// <reference path="jquery/jquery.d.ts" />
+/// <reference path="threejs/detector.d.ts" />
+/// <reference path="threejs/three-canvasrenderer.d.ts" />
+/// <reference path="threejs/three-copyshader.d.ts" />
+/// <reference path="threejs/three-css3drenderer.d.ts" />
+/// <reference path="threejs/three-effectcomposer.d.ts" />
+/// <reference path="threejs/three-maskpass.d.ts" />
+/// <reference path="threejs/three-orbitcontrols.d.ts" />
+/// <reference path="threejs/three-projector.d.ts" />
+/// <reference path="threejs/three-renderpass.d.ts" />
+/// <reference path="threejs/three-shaderpass.d.ts" />
+/// <reference path="threejs/three-trackballcontrols.d.ts" />
+/// <reference path="threejs/three.d.ts" />
+/// <reference path="webaudioapi/waa.d.ts" />
+/// <reference path="webrtc/MediaStream.d.ts" />
+/// <reference path="webrtc/RTCPeerConnection.d.ts" /> 
 var LdrawVisualizer;
 (function (LdrawVisualizer) {
+    var Utility;
+    (function (Utility) {
+        function isString(obj) {
+            return Object.prototype.toString.call(obj) === '[object String]';
+        }
+        Utility.isString = isString;
+        function isNumber(obj) {
+            return Object.prototype.toString.call(obj) === '[object Number]' && !isNaN(obj);
+        }
+        Utility.isNumber = isNumber;
+        function isArray(obj) {
+            return Object.prototype.toString.call(obj) === '[object Array]';
+        }
+        Utility.isArray = isArray;
+    })(Utility = LdrawVisualizer.Utility || (LdrawVisualizer.Utility = {}));
+})(LdrawVisualizer || (LdrawVisualizer = {}));
+/// <reference path="../../typings/references.ts" />
+/// <reference path="../utility.ts" />
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var LdrawVisualizer;
+(function (LdrawVisualizer) {
+    var FileService;
+    (function (FileService) {
+        (function (PartFileLineType) {
+            PartFileLineType[PartFileLineType["CommentOrMETA"] = 0] = "CommentOrMETA";
+            PartFileLineType[PartFileLineType["SubFileReference"] = 1] = "SubFileReference";
+            PartFileLineType[PartFileLineType["Line"] = 2] = "Line";
+            PartFileLineType[PartFileLineType["Triangle"] = 3] = "Triangle";
+            PartFileLineType[PartFileLineType["Quadrilateral"] = 4] = "Quadrilateral";
+            PartFileLineType[PartFileLineType["OptionalLine"] = 5] = "OptionalLine";
+        })(FileService.PartFileLineType || (FileService.PartFileLineType = {}));
+        var PartFileLineType = FileService.PartFileLineType;
+        var PartFileLine = (function () {
+            function PartFileLine(lineType) {
+                this.LineType = lineType;
+            }
+            PartFileLine.prototype.IsValid = function () {
+                throw 'This method is abstract and should be overriden in a derived class - it should not be called directly';
+            };
+            return PartFileLine;
+        })();
+        FileService.PartFileLine = PartFileLine;
+        var CommentLine = (function (_super) {
+            __extends(CommentLine, _super);
+            function CommentLine(lineContent) {
+                _super.call(this, PartFileLineType.CommentOrMETA);
+                this.LineContent = lineContent;
+            }
+            CommentLine.prototype.IsValid = function () {
+                return true;
+            };
+            return CommentLine;
+        })(PartFileLine);
+        FileService.CommentLine = CommentLine;
+        var Coordinates = (function () {
+            function Coordinates(x, y, z) {
+                this.X = x;
+                this.Y = y;
+                this.Z = z;
+            }
+            Coordinates.prototype.IsValid = function () {
+                return LdrawVisualizer.Utility.isNumber(this.X)
+                    && LdrawVisualizer.Utility.isNumber(this.Y)
+                    && LdrawVisualizer.Utility.isNumber(this.Z);
+            };
+            return Coordinates;
+        })();
+        FileService.Coordinates = Coordinates;
+        var SubFileReferenceLine = (function (_super) {
+            __extends(SubFileReferenceLine, _super);
+            function SubFileReferenceLine(color, coordinates, transformMatrix, filename) {
+                _super.call(this, PartFileLineType.SubFileReference);
+                this.Color = color;
+                this.Coordinates = coordinates;
+                this.TransformMatrix = transformMatrix;
+                this.Filename = filename;
+            }
+            SubFileReferenceLine.prototype.IsValid = function () {
+                var transformMatrixIsValid = this.TransformMatrix && this.TransformMatrix.length === 3;
+                if (transformMatrixIsValid) {
+                    outer: for (var i = 0; i < 3; i++) {
+                        if (LdrawVisualizer.Utility.isArray(this.TransformMatrix[i]) && this.TransformMatrix[i].length === 3) {
+                            for (var j = 0; j < 3; j++) {
+                                if (!LdrawVisualizer.Utility.isNumber(this.TransformMatrix[i][j])) {
+                                    transformMatrixIsValid = false;
+                                    break outer;
+                                }
+                            }
+                        }
+                        else {
+                            transformMatrixIsValid = false;
+                            break;
+                        }
+                    }
+                }
+                var fileNameIsValid = /^[a-zA-Z0-9\-_\\/]+\.(dat|ldr|mpd)$/i.test(this.Filename);
+                return LdrawVisualizer.Utility.isNumber(this.Color)
+                    && this.Coordinates.IsValid()
+                    && transformMatrixIsValid
+                    && fileNameIsValid;
+            };
+            return SubFileReferenceLine;
+        })(PartFileLine);
+        FileService.SubFileReferenceLine = SubFileReferenceLine;
+        var LineLine = (function (_super) {
+            __extends(LineLine, _super);
+            function LineLine(color, point1, point2) {
+                _super.call(this, PartFileLineType.Line);
+                this.Point1 = point1;
+                this.Point2 = point2;
+            }
+            LineLine.prototype.IsValid = function () {
+                return this.Point1.IsValid()
+                    && this.Point2.IsValid();
+            };
+            return LineLine;
+        })(PartFileLine);
+        FileService.LineLine = LineLine;
+        var TriangleLine = (function (_super) {
+            __extends(TriangleLine, _super);
+            function TriangleLine(color, point1, point2, point3) {
+                _super.call(this, PartFileLineType.Triangle);
+                this.Color = color;
+                this.Point1 = point1;
+                this.Point2 = point2;
+                this.Point3 = point3;
+            }
+            TriangleLine.prototype.IsValid = function () {
+                return LdrawVisualizer.Utility.isNumber(this.Color)
+                    && this.Point1.IsValid()
+                    && this.Point2.IsValid()
+                    && this.Point3.IsValid();
+            };
+            return TriangleLine;
+        })(PartFileLine);
+        FileService.TriangleLine = TriangleLine;
+        var QuadrilateralLine = (function (_super) {
+            __extends(QuadrilateralLine, _super);
+            function QuadrilateralLine(color, point1, point2, point3, point4) {
+                _super.call(this, PartFileLineType.Quadrilateral);
+                this.Color = color;
+                this.Point1 = point1;
+                this.Point2 = point2;
+                this.Point3 = point3;
+                this.Point4 = point4;
+            }
+            QuadrilateralLine.prototype.IsValid = function () {
+                return LdrawVisualizer.Utility.isNumber(this.Color)
+                    && this.Point1.IsValid()
+                    && this.Point2.IsValid()
+                    && this.Point3.IsValid()
+                    && this.Point4.IsValid();
+            };
+            return QuadrilateralLine;
+        })(PartFileLine);
+        FileService.QuadrilateralLine = QuadrilateralLine;
+        var OptionalLineLine = (function (_super) {
+            __extends(OptionalLineLine, _super);
+            function OptionalLineLine(color, point1, point2, controlPoint1, controlPoint2) {
+                _super.call(this, PartFileLineType.OptionalLine);
+                this.Color = color;
+                this.Point1 = point1;
+                this.Point2 = point2;
+                this.ControlPoint1 = controlPoint1;
+                this.ControlPoint2 = controlPoint2;
+            }
+            OptionalLineLine.prototype.IsValid = function () {
+                return LdrawVisualizer.Utility.isNumber(this.Color)
+                    && this.Point1.IsValid()
+                    && this.Point2.IsValid()
+                    && this.ControlPoint1.IsValid()
+                    && this.ControlPoint2.IsValid();
+            };
+            return OptionalLineLine;
+        })(PartFileLine);
+        FileService.OptionalLineLine = OptionalLineLine;
+        var PartFile = (function () {
+            function PartFile() {
+                this.Lines = [];
+            }
+            PartFile.prototype.IsValid = function () {
+                return this.Lines.every(function (l) { return l.IsValid(); });
+            };
+            return PartFile;
+        })();
+        FileService.PartFile = PartFile;
+    })(FileService = LdrawVisualizer.FileService || (LdrawVisualizer.FileService = {}));
+})(LdrawVisualizer || (LdrawVisualizer = {}));
+/// <reference path="../../typings/references.ts" />
+/// <reference path="./part-file.ts" />
+/// <reference path="../utility.ts" />
+var LdrawVisualizer;
+(function (LdrawVisualizer) {
+    var FileService;
+    (function (FileService) {
+        var FileParser = (function () {
+            function FileParser() {
+            }
+            FileParser.Parse = function (fileContent) {
+                var partFile = new FileService.PartFile();
+                var lines = fileContent.split(/\r?\n/g);
+                lines.forEach(function (line, lineNumber) {
+                    if (!/$\s*^/.test(line)) {
+                        var splitLine = line.split(/\s+/g);
+                        switch (splitLine[0]) {
+                            case '0':
+                                partFile.Lines.push(FileParser.parseCommentOrMETA(line, splitLine, lineNumber));
+                                break;
+                            case '1':
+                                partFile.Lines.push(FileParser.parseSubFileReference(line, splitLine, lineNumber));
+                                break;
+                            case '2':
+                                partFile.Lines.push(FileParser.parseLine(line, splitLine, lineNumber));
+                                break;
+                            case '3':
+                                partFile.Lines.push(FileParser.parseTriangle(line, splitLine, lineNumber));
+                                break;
+                            case '4':
+                                partFile.Lines.push(FileParser.parseQuadrilateral(line, splitLine, lineNumber));
+                                break;
+                            case '5':
+                                partFile.Lines.push(FileParser.parseOptionalLine(line, splitLine, lineNumber));
+                                break;
+                            case '6':
+                                throw 'Unable to parse file: unknown line type: "' + splitLine[0] + '" on line ' + lineNumber;
+                        }
+                    }
+                });
+                return partFile;
+            };
+            FileParser.parseCommentOrMETA = function (line, splitLine, lineNumber) {
+                return new FileService.CommentLine(line.substring(line.indexOf('0') + 2));
+            };
+            FileParser.parseSubFileReference = function (line, splitLine, lineNumber) {
+                var coords = new FileService.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10));
+                var matrix = [
+                    [parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10)],
+                    [parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10)],
+                    [parseInt(splitLine[11], 10), parseInt(splitLine[12], 10), parseInt(splitLine[13], 10)]
+                ];
+                var refLine = new FileService.SubFileReferenceLine(parseInt(splitLine[1], 10), coords, matrix, splitLine[14]);
+                if (!refLine.IsValid()) {
+                    throw 'Unable to parse subfile reference line: Invalid line arguments on line ' + lineNumber;
+                }
+                return refLine;
+            };
+            FileParser.parseLine = function (line, splitLine, lineNumber) {
+                var point1Coords = new FileService.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10));
+                var point2Coords = new FileService.Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10));
+                var lineLine = new FileService.LineLine(parseInt(splitLine[1], 10), point1Coords, point2Coords);
+                if (!lineLine.IsValid()) {
+                    throw 'Unable to parse line line: Invalid line arguments on line ' + lineNumber;
+                }
+                return lineLine;
+            };
+            FileParser.parseTriangle = function (line, splitLine, lineNumber) {
+                var point1Coords = new FileService.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10));
+                var point2Coords = new FileService.Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10));
+                var point3Coords = new FileService.Coordinates(parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10));
+                var triangleLine = new FileService.TriangleLine(parseInt(splitLine[1], 10), point1Coords, point2Coords, point3Coords);
+                if (!triangleLine.IsValid()) {
+                    throw 'Unable to parse triangle line: Invalid line arguments on line ' + lineNumber;
+                }
+                return triangleLine;
+            };
+            FileParser.parseQuadrilateral = function (line, splitLine, lineNumber) {
+                var point1Coords = new FileService.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10));
+                var point2Coords = new FileService.Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10));
+                var point3Coords = new FileService.Coordinates(parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10));
+                var point4Coords = new FileService.Coordinates(parseInt(splitLine[11], 10), parseInt(splitLine[12], 10), parseInt(splitLine[13], 10));
+                var quadLine = new FileService.QuadrilateralLine(parseInt(splitLine[1], 10), point1Coords, point2Coords, point3Coords, point4Coords);
+                if (!quadLine.IsValid()) {
+                    throw 'Unable to parse quadrilateral line: Invalid line arguments on line ' + lineNumber;
+                }
+                return quadLine;
+            };
+            FileParser.parseOptionalLine = function (line, splitLine, lineNumber) {
+                var point1Coords = new FileService.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10));
+                var point2Coords = new FileService.Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10));
+                var controlPoint1Coords = new FileService.Coordinates(parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10));
+                var controlPoint2Coords = new FileService.Coordinates(parseInt(splitLine[11], 10), parseInt(splitLine[12], 10), parseInt(splitLine[13], 10));
+                var optLine = new FileService.OptionalLineLine(parseInt(splitLine[1], 10), point1Coords, point2Coords, controlPoint1Coords, controlPoint2Coords);
+                if (!optLine.IsValid()) {
+                    throw 'Unable to parse optional line: Invalid line arguments on line ' + lineNumber;
+                }
+                return optLine;
+            };
+            return FileParser;
+        })();
+        FileService.FileParser = FileParser;
+    })(FileService = LdrawVisualizer.FileService || (LdrawVisualizer.FileService = {}));
+})(LdrawVisualizer || (LdrawVisualizer = {}));
+/// <reference path="../../typings/references.ts" />
+/// <reference path="./part-file.ts" />
+/// <reference path="./file-parser.ts" />
+var LdrawVisualizer;
+(function (LdrawVisualizer) {
+    var FileService;
+    (function (FileService) {
+        function GetPart(partName, callback) {
+            var temporaryBrickFileForTesting = '0 Brick  2 x  4\r\n0 Name: 3001.dat\r\n0 Author: James Jessiman\r\n0 !LDRAW_ORG Part UPDATE 2004-03\r\n0 !LICENSE Redistributable under CCAL version 2.0 : see CAreadme.txt\r\n\r\n0 BFC CERTIFY CCW\r\n\r\n0 !HISTORY 2002-05-07 [unknown] BFC Certification\r\n0 !HISTORY 2002-06-11 [PTadmin] Official Update 2002-03\r\n0 !HISTORY 2004-02-08 [Steffen] used s\\3001s01.dat\r\n0 !HISTORY 2004-09-15 [PTadmin] Official Update 2004-03\r\n0 !HISTORY 2007-05-07 [PTadmin] Header formatted for Contributor Agreement\r\n0 !HISTORY 2008-07-01 [PTadmin] Official Update 2008-01\r\n\r\n1 16 0 0 0 1 0 0 0 1 0 0 0 1 s\\3001s01.dat\r\n4 16 -40 0 -20 -40 24 -20 40 24 -20 40 0 -20\r\n4 16 40 0 20 40 24 20 -40 24 20 -40 0 20\r\n0';
+            var url = '';
+            // $.ajax({
+            // 	type: 'GET',
+            // 	url: url,
+            // 	success: (partFile: string) => {
+            // 		callback(FileParser.Parse(partFile));
+            // 	},
+            // 	error: () => {
+            // 		// TODO
+            // 	},
+            // 	dataType: 'text'
+            // });
+            callback(FileService.FileParser.Parse(temporaryBrickFileForTesting));
+        }
+        FileService.GetPart = GetPart;
+    })(FileService = LdrawVisualizer.FileService || (LdrawVisualizer.FileService = {}));
+})(LdrawVisualizer || (LdrawVisualizer = {}));
+/// <reference path="./file-service/file-service.ts" />
+var LdrawVisualizer;
+(function (LdrawVisualizer) {
+    LdrawVisualizer.FileService.GetPart('fake', function (part) {
+        console.log(part);
+    });
     if (!Detector.webgl)
         Detector.addGetWebGLMessage();
     var container;
@@ -109,6 +454,15 @@ var LdrawVisualizer;
     function render() {
         renderer.render(scene, camera);
     }
+})(LdrawVisualizer || (LdrawVisualizer = {}));
+var LdrawVisualizer;
+(function (LdrawVisualizer) {
+    var Part = (function () {
+        function Part() {
+        }
+        return Part;
+    })();
+    LdrawVisualizer.Part = Part;
 })(LdrawVisualizer || (LdrawVisualizer = {}));
 /////////////////////////////////////////////////////////////
 // https://github.com/mrdoob/three.js/tree/master/examples
