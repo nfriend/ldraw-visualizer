@@ -1,8 +1,9 @@
-/// <reference path="./file-service/file-service.ts" />
+/// <reference path="./parser/file-service.ts" />
+/// <reference path="./parser/LdrawFile.ts" />
 
 module LdrawVisualizer {
 	
-	FileService.GetPart('fake', (part: FileService.PartFile) => {
+	FileService.GetPart('fake', (part: LdrawFile) => {
 		console.log(part);
 	});
 	
