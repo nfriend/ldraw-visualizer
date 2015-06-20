@@ -20,7 +20,8 @@ module LdrawVisualizer.Utility {
 	}
 
 	export function isValidColorCode(obj) {
-		return isInt(obj) && obj >= 0 && obj <= 511;
+		return isInt(obj) && obj >= 0;
+		//return isInt(obj) && obj >= 0 && obj <= 511;
 	}
 	
 	export function isValidColorHexString(obj) {
@@ -29,5 +30,13 @@ module LdrawVisualizer.Utility {
 	
 	export function isNullOrUndefined(obj) {
 		return obj === null || typeof obj === 'undefined';
+	}
+	
+	export function hasAtLeastOneNonWhitespaceCharacter(s: string) {
+		return /^(?!\s*$).+/.test(s);
+	}
+	
+	export function isNonEmpty(s: string) {
+		return !(/^\s+$/.test(s));
 	}
 }	

@@ -10,12 +10,16 @@ module LdrawVisualizer.Parser.Lines {
 			super(LdrawFileLineType.CommentOrMETA)
 			
 			this.LineContent = lineContent;
-		}
+		} 
 
 		LineContent: string;
 
 		IsValid(): boolean {
 			return true;
+		}
+		
+		static Parse(line: string, splitLine: string[], lineNumber: number): Lines.CommentLine {
+			return new Lines.CommentLine(line.substring(line.indexOf('0') + 2));
 		}
 	}
 }

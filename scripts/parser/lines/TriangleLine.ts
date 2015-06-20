@@ -26,5 +26,18 @@ module LdrawVisualizer.Parser.Lines {
 				&& this.Point2.IsValid()
 				&& this.Point3.IsValid();
 		}
+		
+		static Parse(line: string, splitLine: string[], lineNumber: number): Lines.TriangleLine {
+			var point1Coords = new Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10)),
+				point2Coords = new Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10)),
+				point3Coords = new Coordinates(parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10)),
+				triangleLine = new Lines.TriangleLine(parseInt(splitLine[1], 10), point1Coords, point2Coords, point3Coords);
+
+			if (!triangleLine.IsValid()) {
+				throw 'Unable to parse triangle line: Invalid line arguments on line ' + lineNumber;
+			}
+
+			return triangleLine;
+		}
 	}
 }

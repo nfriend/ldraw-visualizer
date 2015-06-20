@@ -9,6 +9,12 @@ module LdrawVisualizer.Parser.Lines {
 	}
 	
 	export enum LdrawFileMETALineType {
-		Colour = 0
+		Colour = 0,
+		Step = 1,
+		Name = 2,
+		Author = 3,
+		RotationCenter = 4,
+		RotationConfig = 5,
+		RotationStep = 6
 	}
 }

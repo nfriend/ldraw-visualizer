@@ -14,5 +14,9 @@ module LdrawVisualizer.Parser.Lines {
 		IsValid(): boolean {
 			throw 'This method is abstract and should be overriden in a derived class - it should not be called directly';
 		}
+		
+		static Parse(line: string, splitLine: string[], lineNumber: number): Lines.LdrawFileLine {
+			throw 'This method is abstract and should be overriden in a derived class - it should not be called directly';
+		}
 	}
 }
