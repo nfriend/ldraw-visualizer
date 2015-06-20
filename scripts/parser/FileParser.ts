@@ -26,7 +26,7 @@ module LdrawVisualizer.Parser {
 			var lines = fileContent.split(/\r?\n/g);
 			lines.forEach((line, lineNumber) => {
 				if (!/$\s*^/.test(line)) {
-					var splitLine = line.split(/\s+/g)
+					var splitLine = line.trim().split(/\s+/g)
 					switch (splitLine[0]) {
 						
 						// Comment or META command

@@ -19,6 +19,7 @@ module LdrawVisualizer.Parser.Lines {
 		Coordinates: Coordinates;
 		TransformMatrix: number[][];
 		Filename: string;
+		File: LdrawFile;
 
 		IsValid(): boolean {
 			var transformMatrixIsValid = this.TransformMatrix && this.TransformMatrix.length === 3

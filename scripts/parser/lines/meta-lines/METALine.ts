@@ -45,7 +45,7 @@ module LdrawVisualizer.Parser.Lines {
 					return null;
 				}
 			} else {
-				console.log('Unknown or unimplemented META tag on line ' + lineNumber + ': "' + metaTag + '"');
+				//console.log('Unknown or unimplemented META tag on line ' + lineNumber + ': "' + metaTag + '"');
 				return null;
 			}
 		}

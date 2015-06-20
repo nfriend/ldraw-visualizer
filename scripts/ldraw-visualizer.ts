@@ -1,19 +1,19 @@
-/// <reference path="./parser/file-service.ts" />
+/// <reference path="./parser/FileService.ts" />
 /// <reference path="./parser/LdrawFile.ts" />
+/// <reference path="./renderer/LdrawFileRenderer.ts" />
 
 module LdrawVisualizer {
-	
-	FileService.GetPart('fake', (part: LdrawFile) => {
-		console.log(part);
-	});
-	
+
 	if (!Detector.webgl) Detector.addGetWebGLMessage();
 
 	var container;
-	var camera, controls, scene, renderer;
+	var camera, controls, scene, renderer, ldrawFile: LdrawFile;
 
-	init();
-	render();
+	FileService.GetLdrawFile('3001.dat', (parsedFile: LdrawFile) => {
+		ldrawFile = parsedFile;
+		init();
+		render();
+	});
 
 	function animate() {
 		requestAnimationFrame(animate);
@@ -23,7 +23,7 @@ module LdrawVisualizer {
 	function init() {
 		camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
 		camera.position.z = 200;
-		
+
 		controls = new THREE.OrbitControls(camera);
 		controls.damping = 0.2;
 		controls.addEventListener('change', render);
@@ -31,82 +31,7 @@ module LdrawVisualizer {
 		scene = new THREE.Scene();
 		scene.fog = new THREE.FogExp2(0x111111, 0.002);
 
-		var cubeGeometry = new THREE.BoxGeometry(96, 65, 160);
-		var cylinderGeometry = new THREE.CylinderGeometry(12, 12, 9, 32);
-		var material = new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.FlatShading });
-		
-		// just for looks.
-		
-		var cube = new THREE.Mesh(cubeGeometry, material);
-		scene.add(cube);
-		
-		var cylinder = new THREE.Mesh(cylinderGeometry, material);
-		cylinder.geometry.mergeVertices();
-		cylinder.position.y = 37;
-		cylinder.position.x = 50 - 24;
-		cylinder.position.z = 50 - 30;
-		scene.add(cylinder);
-		
-		cylinder = new THREE.Mesh(cylinderGeometry, material);
-		cylinder.geometry.mergeVertices();
-		cylinder.position.y = 37;
-		cylinder.position.x = 50 - 72;
-		cylinder.position.z = 50 - 30;
-		scene.add(cylinder);
-		
-		cylinder = new THREE.Mesh(cylinderGeometry, material);
-		cylinder.geometry.mergeVertices();
-		cylinder.position.y = 37;
-		cylinder.position.x = 50 - 24;
-		cylinder.position.z = 50 + 6;
-		scene.add(cylinder);
-		
-		cylinder = new THREE.Mesh(cylinderGeometry, material);
-		cylinder.geometry.mergeVertices();
-		cylinder.position.y = 37;
-		cylinder.position.x = 50 - 72;
-		cylinder.position.z = 50 + 6;
-		scene.add(cylinder);
-		
-		cylinder = new THREE.Mesh(cylinderGeometry, material);
-		cylinder.geometry.mergeVertices();
-		cylinder.position.y = 37;
-		cylinder.position.x = 50 - 24;
-		cylinder.position.z = 50 - 66;
-		scene.add(cylinder);
-		
-		cylinder = new THREE.Mesh(cylinderGeometry, material);
-		cylinder.geometry.mergeVertices();
-		cylinder.position.y = 37;
-		cylinder.position.x = 50 - 72;
-		cylinder.position.z = 50 - 66;
-		scene.add(cylinder);
-		
-		cylinder = new THREE.Mesh(cylinderGeometry, material);
-		cylinder.geometry.mergeVertices();
-		cylinder.position.y = 37;
-		cylinder.position.x = 50 - 24;
-		cylinder.position.z = 50 - 102;
-		scene.add(cylinder);
-		
-		cylinder = new THREE.Mesh(cylinderGeometry, material);
-		cylinder.geometry.mergeVertices();
-		cylinder.position.y = 37;
-		cylinder.position.x = 50 - 72;
-		cylinder.position.z = 50 - 102;
-		scene.add(cylinder);
-		
-		
-		
-		// for (var i = 0; i < 500; i++) {
-		// 	var mesh = new THREE.Mesh(geometry, material);
-		// 	mesh.position.x = (Math.random() - 0.5) * 1000;
-		// 	mesh.position.y = (Math.random() - 0.5) * 1000;
-		// 	mesh.position.z = (Math.random() - 0.5) * 1000;
-		// 	mesh.updateMatrix();
-		// 	mesh.matrixAutoUpdate = false;
-		// 	scene.add(mesh);
-		// }
+		Renderer.LdrawFileRenderer.Render(scene, ldrawFile);
 
 		// lights
 		var directionalLight = new THREE.DirectionalLight(0xffffff);
