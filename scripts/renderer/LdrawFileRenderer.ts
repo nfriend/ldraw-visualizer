@@ -12,10 +12,10 @@ module LdrawVisualizer.Renderer {
 					var quadLine = <Parser.Lines.QuadrilateralLine>l;
 					var geometry = new THREE.Geometry();
 					geometry.vertices.push(
-						new THREE.Vector3(quadLine.Point1.X + (Math.random()), quadLine.Point1.Y + (Math.random()), quadLine.Point1.Z + (Math.random())),
-						new THREE.Vector3(quadLine.Point2.X + (Math.random()), quadLine.Point2.Y + (Math.random()), quadLine.Point2.Z + (Math.random())),
-						new THREE.Vector3(quadLine.Point3.X + (Math.random()), quadLine.Point3.Y + (Math.random()), quadLine.Point3.Z + (Math.random())),
-						new THREE.Vector3(quadLine.Point4.X + (Math.random()), quadLine.Point4.Y + (Math.random()), quadLine.Point4.Z + (Math.random()))
+						new THREE.Vector3(quadLine.Point1.X, quadLine.Point1.Y, quadLine.Point1.Z),
+						new THREE.Vector3(quadLine.Point2.X, quadLine.Point2.Y, quadLine.Point2.Z),
+						new THREE.Vector3(quadLine.Point3.X, quadLine.Point3.Y, quadLine.Point3.Z),
+						new THREE.Vector3(quadLine.Point4.X, quadLine.Point4.Y, quadLine.Point4.Z)
 						);
 
 					geometry.faces.push(new THREE.Face3(0, 1, 2));
@@ -43,9 +43,9 @@ module LdrawVisualizer.Renderer {
 					var triLine = <Parser.Lines.TriangleLine>l;
 					var geometry = new THREE.Geometry();
 					geometry.vertices.push(
-						new THREE.Vector3(triLine.Point1.X + (Math.random()), triLine.Point1.Y + (Math.random()), triLine.Point1.Z + (Math.random())),
-						new THREE.Vector3(triLine.Point2.X + (Math.random()), triLine.Point2.Y + (Math.random()), triLine.Point2.Z + (Math.random())),
-						new THREE.Vector3(triLine.Point3.X + (Math.random()), triLine.Point3.Y + (Math.random()), triLine.Point3.Z + (Math.random()))
+						new THREE.Vector3(triLine.Point1.X, triLine.Point1.Y, triLine.Point1.Z),
+						new THREE.Vector3(triLine.Point2.X, triLine.Point2.Y, triLine.Point2.Z),
+						new THREE.Vector3(triLine.Point3.X, triLine.Point3.Y, triLine.Point3.Z)
 						);
 
 					geometry.faces.push(new THREE.Face3(0, 1, 2));
@@ -76,14 +76,14 @@ module LdrawVisualizer.Renderer {
 		}
 
 		private static combineTransforms(matrix1: number[][], matrix2: number[][]) {
-			var m1 = new THREE.Matrix4(
+			var m1 = new THREE.Matrix4().set(
 				matrix1[0][0], matrix1[0][1], matrix1[0][2], 0,
 				matrix1[1][0], matrix1[1][1], matrix1[1][2], 0,
 				matrix1[2][0], matrix1[2][1], matrix1[2][2], 0,
 				0, 0, 0, 1
 				);
 
-			var m2 = new THREE.Matrix4(
+			var m2 = new THREE.Matrix4().set(
 				matrix2[0][0], matrix2[0][1], matrix2[0][2], 0,
 				matrix2[1][0], matrix2[1][1], matrix2[1][2], 0,
 				matrix2[2][0], matrix2[2][1], matrix2[2][2], 0,
