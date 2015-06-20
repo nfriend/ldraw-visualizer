@@ -968,7 +968,7 @@ var LdrawVisualizer;
             else {
                 $.ajax({
                     type: 'GET',
-                    url: 'Ldraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
+                    url: 'LDraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
                     success: function (partFile) {
                         var parsedFile = LdrawVisualizer.Parser.FileParser.Parse(partFile);
                         returnFile = parsedFile;

@@ -17,7 +17,7 @@ module LdrawVisualizer {
 			} else {
 				$.ajax({
 					type: 'GET',
-					url: 'Ldraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
+					url: 'LDraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
 					success: (partFile: string) => {
 						var parsedFile = Parser.FileParser.Parse(partFile);
 						returnFile = parsedFile;
