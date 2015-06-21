@@ -48,11 +48,11 @@ module LdrawVisualizer.Parser.Lines {
 		}
 		
 		static Parse(line: string, splitLine: string[], lineNumber: number): Lines.SubFileReferenceLine {
-			var coords = new Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10)),
+			var coords = new Coordinates(parseFloat(splitLine[2]), parseFloat(splitLine[3]), parseFloat(splitLine[4])),
 				matrix = [
-					[parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10)],
-					[parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10)],
-					[parseInt(splitLine[11], 10), parseInt(splitLine[12], 10), parseInt(splitLine[13], 10)]
+					[parseFloat(splitLine[5]), parseFloat(splitLine[6]), parseFloat(splitLine[7])],
+					[parseFloat(splitLine[8]), parseFloat(splitLine[9]), parseFloat(splitLine[10])],
+					[parseFloat(splitLine[11]), parseFloat(splitLine[12]), parseFloat(splitLine[13])]
 				],
 				refLine = new Lines.SubFileReferenceLine(parseInt(splitLine[1], 10), coords, matrix, splitLine[14]);
 

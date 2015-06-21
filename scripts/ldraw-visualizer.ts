@@ -11,6 +11,7 @@ module LdrawVisualizer {
 
 	FileService.GetLdrawFile('3001.dat', (parsedFile: LdrawFile) => {
 		ldrawFile = parsedFile;
+		console.log(parsedFile);
 		init();
 		render();
 	});

@@ -59,6 +59,14 @@ var LdrawVisualizer;
             return !(/^\s+$/.test(s));
         }
         Utility.isNonEmpty = isNonEmpty;
+        function logMatrix(matrix) {
+            var e = matrix.elements;
+            console.log(e[0], e[1], e[2], e[3]);
+            console.log(e[4], e[5], e[6], e[7]);
+            console.log(e[8], e[9], e[10], e[11]);
+            console.log(e[12], e[13], e[14], e[15]);
+        }
+        Utility.logMatrix = logMatrix;
     })(Utility = LdrawVisualizer.Utility || (LdrawVisualizer.Utility = {}));
 })(LdrawVisualizer || (LdrawVisualizer = {}));
 var LdrawVisualizer;
@@ -294,7 +302,7 @@ var LdrawVisualizer;
                         && this.Point4.IsValid();
                 };
                 QuadrilateralLine.Parse = function (line, splitLine, lineNumber) {
-                    var point1Coords = new Parser.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10)), point2Coords = new Parser.Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10)), point3Coords = new Parser.Coordinates(parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10)), point4Coords = new Parser.Coordinates(parseInt(splitLine[11], 10), parseInt(splitLine[12], 10), parseInt(splitLine[13], 10)), quadLine = new Lines.QuadrilateralLine(parseInt(splitLine[1], 10), point1Coords, point2Coords, point3Coords, point4Coords);
+                    var point1Coords = new Parser.Coordinates(parseFloat(splitLine[2]), parseFloat(splitLine[3]), parseFloat(splitLine[4])), point2Coords = new Parser.Coordinates(parseFloat(splitLine[5]), parseFloat(splitLine[6]), parseFloat(splitLine[7])), point3Coords = new Parser.Coordinates(parseFloat(splitLine[8]), parseFloat(splitLine[9]), parseFloat(splitLine[10])), point4Coords = new Parser.Coordinates(parseFloat(splitLine[11]), parseFloat(splitLine[12]), parseFloat(splitLine[13])), quadLine = new Lines.QuadrilateralLine(parseInt(splitLine[1], 10), point1Coords, point2Coords, point3Coords, point4Coords);
                     if (!quadLine.IsValid()) {
                         throw 'Unable to parse quadrilateral line: Invalid line arguments on line ' + lineNumber;
                     }
@@ -351,10 +359,10 @@ var LdrawVisualizer;
                         && fileNameIsValid);
                 };
                 SubFileReferenceLine.Parse = function (line, splitLine, lineNumber) {
-                    var coords = new Parser.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10)), matrix = [
-                        [parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10)],
-                        [parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10)],
-                        [parseInt(splitLine[11], 10), parseInt(splitLine[12], 10), parseInt(splitLine[13], 10)]
+                    var coords = new Parser.Coordinates(parseFloat(splitLine[2]), parseFloat(splitLine[3]), parseFloat(splitLine[4])), matrix = [
+                        [parseFloat(splitLine[5]), parseFloat(splitLine[6]), parseFloat(splitLine[7])],
+                        [parseFloat(splitLine[8]), parseFloat(splitLine[9]), parseFloat(splitLine[10])],
+                        [parseFloat(splitLine[11]), parseFloat(splitLine[12]), parseFloat(splitLine[13])]
                     ], refLine = new Lines.SubFileReferenceLine(parseInt(splitLine[1], 10), coords, matrix, splitLine[14]);
                     if (!refLine.IsValid()) {
                         throw 'Unable to parse subfile reference line: Invalid line arguments on line ' + lineNumber;
@@ -394,7 +402,7 @@ var LdrawVisualizer;
                         && this.Point3.IsValid();
                 };
                 TriangleLine.Parse = function (line, splitLine, lineNumber) {
-                    var point1Coords = new Parser.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10)), point2Coords = new Parser.Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10)), point3Coords = new Parser.Coordinates(parseInt(splitLine[8], 10), parseInt(splitLine[9], 10), parseInt(splitLine[10], 10)), triangleLine = new Lines.TriangleLine(parseInt(splitLine[1], 10), point1Coords, point2Coords, point3Coords);
+                    var point1Coords = new Parser.Coordinates(parseFloat(splitLine[2]), parseFloat(splitLine[3]), parseFloat(splitLine[4])), point2Coords = new Parser.Coordinates(parseFloat(splitLine[5]), parseFloat(splitLine[6]), parseFloat(splitLine[7])), point3Coords = new Parser.Coordinates(parseFloat(splitLine[8]), parseFloat(splitLine[9]), parseFloat(splitLine[10])), triangleLine = new Lines.TriangleLine(parseInt(splitLine[1], 10), point1Coords, point2Coords, point3Coords);
                     if (!triangleLine.IsValid()) {
                         throw 'Unable to parse triangle line: Invalid line arguments on line ' + lineNumber;
                     }
@@ -1019,19 +1027,46 @@ var LdrawVisualizer;
             function LdrawFileRenderer() {
             }
             LdrawFileRenderer.Render = function (scene, ldrawFile, translationMatrix) {
-                // Render all quadrilaterals
+                // var a = new THREE.Matrix4().set(
+                // 	1, 0, 0, -2,
+                // 	0, 1, 0, 7,
+                // 	0, 0, 1, 6,
+                // 	0, 0, 0, 1
+                // );
+                // var b = new THREE.Matrix4().set(
+                // 	1, 0, 0, 3,
+                // 	0, 1, 0, 4,
+                // 	0, 0, 1, 6,
+                // 	0, 0, 0, 1
+                // );
+                // Utility.logMatrix(a.multiply(b));
+                // return;
+                // var legoMaterial1 = new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.SmoothShading, side: THREE.DoubleSide });
+                // var mesh1 = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), legoMaterial1);
+                // scene.add(mesh1);
+                // var legoMaterial2 = new THREE.MeshPhongMaterial({ color: 0x0000ff, shading: THREE.SmoothShading, side: THREE.DoubleSide });
+                // var mesh2 = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), legoMaterial2);
+                // mesh2.applyMatrix(new THREE.Matrix4().set(
+                // 	.5, 0, 0, 50,
+                // 	0, .5, 0, 50,
+                // 	0, 0, .5, 50,
+                // 	0, 0, 0, 1
+                // ));
+                // scene.add(mesh2);
+                // return;
+                // Render all quadrilaterals 
                 ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.Quadrilateral; })
                     .forEach(function (l) {
                     var quadLine = l;
                     var geometry = new THREE.Geometry();
-                    geometry.vertices.push(new THREE.Vector3(quadLine.Point1.X, quadLine.Point1.Y, quadLine.Point1.Z), new THREE.Vector3(quadLine.Point2.X, quadLine.Point2.Y, quadLine.Point2.Z), new THREE.Vector3(quadLine.Point3.X, quadLine.Point3.Y, quadLine.Point3.Z), new THREE.Vector3(quadLine.Point4.X, quadLine.Point4.Y, quadLine.Point4.Z));
+                    geometry.vertices.push(new THREE.Vector3(quadLine.Point1.X, -quadLine.Point1.Y, quadLine.Point1.Z), new THREE.Vector3(quadLine.Point2.X, -quadLine.Point2.Y, quadLine.Point2.Z), new THREE.Vector3(quadLine.Point3.X, -quadLine.Point3.Y, quadLine.Point3.Z), new THREE.Vector3(quadLine.Point4.X, -quadLine.Point4.Y, quadLine.Point4.Z));
+                    if (translationMatrix) {
+                        geometry.applyMatrix(translationMatrix);
+                    }
                     geometry.faces.push(new THREE.Face3(0, 1, 2));
                     geometry.faces.push(new THREE.Face3(2, 3, 0));
                     geometry.computeFaceNormals();
-                    if (translationMatrix) {
-                        geometry.applyMatrix(new THREE.Matrix4().makeTranslation(translationMatrix[0][0], translationMatrix[0][1], translationMatrix[0][2]));
-                    }
-                    var legoMaterial = new THREE.MeshPhongMaterial({ color: Math.floor(Math.random() * 16777215), shading: THREE.FlatShading, side: THREE.DoubleSide });
+                    var legoMaterial = new THREE.MeshPhongMaterial({ color: Math.floor(Math.random() * 16777215), shading: THREE.SmoothShading, side: THREE.DoubleSide });
                     var mesh = new THREE.Mesh(geometry, legoMaterial);
                     scene.add(mesh);
                 });
@@ -1040,13 +1075,13 @@ var LdrawVisualizer;
                     .forEach(function (l) {
                     var triLine = l;
                     var geometry = new THREE.Geometry();
-                    geometry.vertices.push(new THREE.Vector3(triLine.Point1.X, triLine.Point1.Y, triLine.Point1.Z), new THREE.Vector3(triLine.Point2.X, triLine.Point2.Y, triLine.Point2.Z), new THREE.Vector3(triLine.Point3.X, triLine.Point3.Y, triLine.Point3.Z));
+                    geometry.vertices.push(new THREE.Vector3(triLine.Point1.X, -triLine.Point1.Y, triLine.Point1.Z), new THREE.Vector3(triLine.Point2.X, -triLine.Point2.Y, triLine.Point2.Z), new THREE.Vector3(triLine.Point3.X, -triLine.Point3.Y, triLine.Point3.Z));
+                    if (translationMatrix) {
+                        geometry.applyMatrix(translationMatrix);
+                    }
                     geometry.faces.push(new THREE.Face3(0, 1, 2));
                     geometry.computeFaceNormals();
-                    if (translationMatrix) {
-                        geometry.applyMatrix(new THREE.Matrix4().makeTranslation(translationMatrix[0][0], translationMatrix[0][1], translationMatrix[0][2]));
-                    }
-                    var legoMaterial = new THREE.MeshPhongMaterial({ color: Math.floor(Math.random() * 16777215), shading: THREE.FlatShading, side: THREE.DoubleSide });
+                    var legoMaterial = new THREE.MeshPhongMaterial({ color: Math.floor(Math.random() * 16777215), shading: THREE.SmoothShading, side: THREE.DoubleSide });
                     var mesh = new THREE.Mesh(geometry, legoMaterial);
                     scene.add(mesh);
                 });
@@ -1054,18 +1089,19 @@ var LdrawVisualizer;
                 ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.SubFileReference; })
                     .forEach(function (l) {
                     var subfileLine = l;
-                    var newMatrix = translationMatrix ? LdrawFileRenderer.combineTransforms(subfileLine.TransformMatrix, translationMatrix) : subfileLine.TransformMatrix;
+                    var newMatrix = translationMatrix ? LdrawFileRenderer.getMatrix4(subfileLine).multiply(translationMatrix) : LdrawFileRenderer.getMatrix4(subfileLine);
+                    // console.log('new matrix: ');
+                    // console.log(newMatrix.elements[0], newMatrix.elements[1], newMatrix.elements[2], newMatrix.elements[3])
+                    // console.log(newMatrix.elements[4], newMatrix.elements[5], newMatrix.elements[6], newMatrix.elements[7])
+                    // console.log(newMatrix.elements[8], newMatrix.elements[9], newMatrix.elements[10], newMatrix.elements[11])
+                    // console.log(newMatrix.elements[12], newMatrix.elements[13], newMatrix.elements[14], newMatrix.elements[15])
                     LdrawFileRenderer.Render(scene, subfileLine.File, newMatrix);
                 });
             };
-            LdrawFileRenderer.combineTransforms = function (matrix1, matrix2) {
-                var m1 = new THREE.Matrix4().set(matrix1[0][0], matrix1[0][1], matrix1[0][2], 0, matrix1[1][0], matrix1[1][1], matrix1[1][2], 0, matrix1[2][0], matrix1[2][1], matrix1[2][2], 0, 0, 0, 0, 1);
-                var m2 = new THREE.Matrix4().set(matrix2[0][0], matrix2[0][1], matrix2[0][2], 0, matrix2[1][0], matrix2[1][1], matrix2[1][2], 0, matrix2[2][0], matrix2[2][1], matrix2[2][2], 0, 0, 0, 0, 1);
-                return [
-                    [m1.multiply(m2).elements[0], m1.multiply(m2).elements[1], m1.multiply(m2).elements[2]],
-                    [m1.multiply(m2).elements[4], m1.multiply(m2).elements[5], m1.multiply(m2).elements[6]],
-                    [m1.multiply(m2).elements[8], m1.multiply(m2).elements[9], m1.multiply(m2).elements[10]]
-                ];
+            LdrawFileRenderer.getMatrix4 = function (ref) {
+                var m = ref.TransformMatrix;
+                var newMatrix = new THREE.Matrix4().set(m[0][0], m[0][1], m[0][2], ref.Coordinates.X, m[1][0], m[1][1], m[1][2], -ref.Coordinates.Y, m[2][0], m[2][1], m[2][2], ref.Coordinates.Z, 0, 0, 0, 1);
+                return newMatrix;
             };
             return LdrawFileRenderer;
         })();
@@ -1083,6 +1119,7 @@ var LdrawVisualizer;
     var camera, controls, scene, renderer, ldrawFile;
     LdrawVisualizer.FileService.GetLdrawFile('3001.dat', function (parsedFile) {
         ldrawFile = parsedFile;
+        console.log(parsedFile);
         init();
         render();
     });
