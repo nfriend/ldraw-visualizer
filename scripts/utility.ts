@@ -42,9 +42,9 @@ module LdrawVisualizer.Utility {
 
 	export function logMatrix(matrix: THREE.Matrix4) {
 		var e = matrix.elements;
-		console.log(e[0], e[1], e[2], e[3]);
-		console.log(e[4], e[5], e[6], e[7]);
-		console.log(e[8], e[9], e[10], e[11]);
-		console.log(e[12], e[13], e[14], e[15]);
+		console.log(e[0], e[4], e[8], e[12]);
+		console.log(e[1], e[5], e[9], e[13]);
+		console.log(e[2], e[6], e[10], e[14]);
+		console.log(e[3], e[7], e[11], e[15]);
 	}
 }	

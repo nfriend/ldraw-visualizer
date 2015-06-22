@@ -4,48 +4,15 @@
 
 module LdrawVisualizer.Renderer {
 	export class LdrawFileRenderer {
+
 		static Render(scene: THREE.Scene, ldrawFile: LdrawFile, translationMatrix?: THREE.Matrix4) {
-			
-			// var a = new THREE.Matrix4().set(
-			// 	1, 0, 0, -2,
-			// 	0, 1, 0, 7,
-			// 	0, 0, 1, 6,
-			// 	0, 0, 0, 1
-			// );
-			
-			// var b = new THREE.Matrix4().set(
-			// 	1, 0, 0, 3,
-			// 	0, 1, 0, 4,
-			// 	0, 0, 1, 6,
-			// 	0, 0, 0, 1
-			// );
-			
-			// Utility.logMatrix(a.multiply(b));
-			
-			// return;
-			
-			
-			// var legoMaterial1 = new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.SmoothShading, side: THREE.DoubleSide });
-			// var mesh1 = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), legoMaterial1);
-			// scene.add(mesh1);
-			
-			// var legoMaterial2 = new THREE.MeshPhongMaterial({ color: 0x0000ff, shading: THREE.SmoothShading, side: THREE.DoubleSide });
-			// var mesh2 = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), legoMaterial2);
-			// mesh2.applyMatrix(new THREE.Matrix4().set(
-			// 	.5, 0, 0, 50,
-			// 	0, .5, 0, 50,
-			// 	0, 0, .5, 50,
-			// 	0, 0, 0, 1
-			// ));
-			// scene.add(mesh2);
-			
-			// return;
 			
 			// Render all quadrilaterals 
 			ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.Quadrilateral)
 				.forEach(l => {
 					var quadLine = <Parser.Lines.QuadrilateralLine>l;
 					var geometry = new THREE.Geometry();
+
 					geometry.vertices.push(
 						new THREE.Vector3(quadLine.Point1.X, -quadLine.Point1.Y, quadLine.Point1.Z),
 						new THREE.Vector3(quadLine.Point2.X, -quadLine.Point2.Y, quadLine.Point2.Z),
@@ -71,6 +38,7 @@ module LdrawVisualizer.Renderer {
 				.forEach(l => {
 					var triLine = <Parser.Lines.TriangleLine>l;
 					var geometry = new THREE.Geometry();
+
 					geometry.vertices.push(
 						new THREE.Vector3(triLine.Point1.X, -triLine.Point1.Y, triLine.Point1.Z),
 						new THREE.Vector3(triLine.Point2.X, -triLine.Point2.Y, triLine.Point2.Z),
@@ -95,12 +63,6 @@ module LdrawVisualizer.Renderer {
 					var subfileLine = <Parser.Lines.SubFileReferenceLine>l;
 					var newMatrix = translationMatrix ? LdrawFileRenderer.getMatrix4(subfileLine).multiply(translationMatrix) : LdrawFileRenderer.getMatrix4(subfileLine);
 					
-					// console.log('new matrix: ');
-					// console.log(newMatrix.elements[0], newMatrix.elements[1], newMatrix.elements[2], newMatrix.elements[3])
-					// console.log(newMatrix.elements[4], newMatrix.elements[5], newMatrix.elements[6], newMatrix.elements[7])
-					// console.log(newMatrix.elements[8], newMatrix.elements[9], newMatrix.elements[10], newMatrix.elements[11])
-					// console.log(newMatrix.elements[12], newMatrix.elements[13], newMatrix.elements[14], newMatrix.elements[15])
-
 					LdrawFileRenderer.Render(scene, subfileLine.File, newMatrix);
 				});
 		}
@@ -112,7 +74,7 @@ module LdrawVisualizer.Renderer {
 				m[1][0], m[1][1], m[1][2], -ref.Coordinates.Y,
 				m[2][0], m[2][1], m[2][2], ref.Coordinates.Z,
 				0, 0, 0, 1
-				);
+				); 
 
 			return newMatrix;
 		}

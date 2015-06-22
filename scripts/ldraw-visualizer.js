@@ -61,10 +61,10 @@ var LdrawVisualizer;
         Utility.isNonEmpty = isNonEmpty;
         function logMatrix(matrix) {
             var e = matrix.elements;
-            console.log(e[0], e[1], e[2], e[3]);
-            console.log(e[4], e[5], e[6], e[7]);
-            console.log(e[8], e[9], e[10], e[11]);
-            console.log(e[12], e[13], e[14], e[15]);
+            console.log(e[0], e[4], e[8], e[12]);
+            console.log(e[1], e[5], e[9], e[13]);
+            console.log(e[2], e[6], e[10], e[14]);
+            console.log(e[3], e[7], e[11], e[15]);
         }
         Utility.logMatrix = logMatrix;
     })(Utility = LdrawVisualizer.Utility || (LdrawVisualizer.Utility = {}));
@@ -968,31 +968,34 @@ var LdrawVisualizer;
         FileService.GetLdrawFile = function (partName, callback, isPrimitive) {
             if (isPrimitive === void 0) { isPrimitive = false; }
             var returnFile;
-            if (LdrawVisualizer.Parser.FileCache[partName.toUpperCase()]) {
-                FileService.getSubparts(LdrawVisualizer.Parser.FileCache[partName.toUpperCase()], function () {
-                    callback(returnFile);
-                });
+            // if (Parser.FileCache[partName.toUpperCase()]) {
+            // 	FileService.getSubparts(Parser.FileCache[partName.toUpperCase()], () => {
+            // 		callback(returnFile);
+            // 	});
+            // } else {
+            // temporary, to avoid millions of console errors
+            if ('stud4.dat box5.dat box3u2p.dat stud.dat 4-4edge.dat 4-4cyli.dat 4-4ring3.dat 4-4disc.dat'.indexOf(partName) !== -1) {
+                isPrimitive = true;
             }
-            else {
-                $.ajax({
-                    type: 'GET',
-                    url: 'LDraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
-                    success: function (partFile) {
-                        var parsedFile = LdrawVisualizer.Parser.FileParser.Parse(partFile);
-                        returnFile = parsedFile;
-                        LdrawVisualizer.Parser.FileCache[partName.toUpperCase()] = parsedFile;
-                        FileService.getSubparts(parsedFile, function () {
-                            callback(returnFile);
-                        });
-                    },
-                    error: function () {
-                        if (!isPrimitive) {
-                            FileService.GetLdrawFile(partName, callback, true);
-                        }
-                    },
-                    dataType: 'text'
-                });
-            }
+            $.ajax({
+                type: 'GET',
+                url: 'LDraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
+                success: function (partFile) {
+                    var parsedFile = LdrawVisualizer.Parser.FileParser.Parse(partFile);
+                    returnFile = parsedFile;
+                    // Parser.FileCache[partName.toUpperCase()] = parsedFile;
+                    FileService.getSubparts(parsedFile, function () {
+                        callback(returnFile);
+                    });
+                },
+                error: function () {
+                    if (!isPrimitive) {
+                        FileService.GetLdrawFile(partName, callback, true);
+                    }
+                },
+                dataType: 'text'
+            });
+            // }
         };
         FileService.getSubparts = function (part, callback) {
             var allSubFileRefs = part.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.SubFileReference; });
@@ -1027,33 +1030,6 @@ var LdrawVisualizer;
             function LdrawFileRenderer() {
             }
             LdrawFileRenderer.Render = function (scene, ldrawFile, translationMatrix) {
-                // var a = new THREE.Matrix4().set(
-                // 	1, 0, 0, -2,
-                // 	0, 1, 0, 7,
-                // 	0, 0, 1, 6,
-                // 	0, 0, 0, 1
-                // );
-                // var b = new THREE.Matrix4().set(
-                // 	1, 0, 0, 3,
-                // 	0, 1, 0, 4,
-                // 	0, 0, 1, 6,
-                // 	0, 0, 0, 1
-                // );
-                // Utility.logMatrix(a.multiply(b));
-                // return;
-                // var legoMaterial1 = new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.SmoothShading, side: THREE.DoubleSide });
-                // var mesh1 = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), legoMaterial1);
-                // scene.add(mesh1);
-                // var legoMaterial2 = new THREE.MeshPhongMaterial({ color: 0x0000ff, shading: THREE.SmoothShading, side: THREE.DoubleSide });
-                // var mesh2 = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), legoMaterial2);
-                // mesh2.applyMatrix(new THREE.Matrix4().set(
-                // 	.5, 0, 0, 50,
-                // 	0, .5, 0, 50,
-                // 	0, 0, .5, 50,
-                // 	0, 0, 0, 1
-                // ));
-                // scene.add(mesh2);
-                // return;
                 // Render all quadrilaterals 
                 ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.Quadrilateral; })
                     .forEach(function (l) {
@@ -1090,11 +1066,6 @@ var LdrawVisualizer;
                     .forEach(function (l) {
                     var subfileLine = l;
                     var newMatrix = translationMatrix ? LdrawFileRenderer.getMatrix4(subfileLine).multiply(translationMatrix) : LdrawFileRenderer.getMatrix4(subfileLine);
-                    // console.log('new matrix: ');
-                    // console.log(newMatrix.elements[0], newMatrix.elements[1], newMatrix.elements[2], newMatrix.elements[3])
-                    // console.log(newMatrix.elements[4], newMatrix.elements[5], newMatrix.elements[6], newMatrix.elements[7])
-                    // console.log(newMatrix.elements[8], newMatrix.elements[9], newMatrix.elements[10], newMatrix.elements[11])
-                    // console.log(newMatrix.elements[12], newMatrix.elements[13], newMatrix.elements[14], newMatrix.elements[15])
                     LdrawFileRenderer.Render(scene, subfileLine.File, newMatrix);
                 });
             };
@@ -1117,6 +1088,7 @@ var LdrawVisualizer;
         Detector.addGetWebGLMessage();
     var container;
     var camera, controls, scene, renderer, ldrawFile;
+    var showAxes = true;
     LdrawVisualizer.FileService.GetLdrawFile('3001.dat', function (parsedFile) {
         ldrawFile = parsedFile;
         console.log(parsedFile);
@@ -1135,6 +1107,9 @@ var LdrawVisualizer;
         controls.addEventListener('change', render);
         scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0x111111, 0.002);
+        if (showAxes) {
+            scene.add(buildAxes(1000));
+        }
         LdrawVisualizer.Renderer.LdrawFileRenderer.Render(scene, ldrawFile);
         // lights
         var directionalLight = new THREE.DirectionalLight(0xffffff);
@@ -1154,6 +1129,30 @@ var LdrawVisualizer;
         container.appendChild(renderer.domElement);
         window.addEventListener('resize', onWindowResize, false);
         animate();
+    }
+    function buildAxes(length) {
+        var axes = new THREE.Object3D();
+        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(length, 0, 0), 0xFF0000, false)); // +X
+        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(-length, 0, 0), 0xFF0000, true)); // -X
+        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, length, 0), 0x00FF00, false)); // +Y
+        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -length, 0), 0x00FF00, true)); // -Y
+        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, length), 0x0000FF, false)); // +Z
+        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -length), 0x0000FF, true)); // -Z
+        return axes;
+    }
+    function buildAxis(src, dst, colorHex, dashed) {
+        var geom = new THREE.Geometry(), mat;
+        if (dashed) {
+            mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 3, gapSize: 3 });
+        }
+        else {
+            mat = new THREE.LineBasicMaterial({ linewidth: 3, color: colorHex });
+        }
+        geom.vertices.push(src.clone());
+        geom.vertices.push(dst.clone());
+        geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
+        var axis = new THREE.Line(geom, mat, THREE.LinePieces);
+        return axis;
     }
     function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight;

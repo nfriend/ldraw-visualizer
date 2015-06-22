@@ -10,31 +10,38 @@ module LdrawVisualizer {
 
 		static GetLdrawFile(partName: string, callback: (file: LdrawVisualizer.LdrawFile) => void, isPrimitive: boolean = false) {
 			var returnFile: LdrawVisualizer.LdrawFile;
-			if (Parser.FileCache[partName.toUpperCase()]) {
-				FileService.getSubparts(Parser.FileCache[partName.toUpperCase()], () => {
-					callback(returnFile);
-				});
-			} else {
-				$.ajax({
-					type: 'GET',
-					url: 'LDraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
-					success: (partFile: string) => {
-						var parsedFile = Parser.FileParser.Parse(partFile);
-						returnFile = parsedFile;
-						Parser.FileCache[partName.toUpperCase()] = parsedFile;
-						
-						FileService.getSubparts(parsedFile, () => {
-							callback(returnFile);
-						});
-					},
-					error: () => {
-						if (!isPrimitive) {
-							FileService.GetLdrawFile(partName, callback, true);
-						}
-					},
-					dataType: 'text'
-				});
+			// if (Parser.FileCache[partName.toUpperCase()]) {
+			// 	FileService.getSubparts(Parser.FileCache[partName.toUpperCase()], () => {
+			// 		callback(returnFile);
+			// 	});
+			// } else {
+				
+			// temporary, to avoid millions of console errors
+			if ('stud4.dat box5.dat box3u2p.dat stud.dat 4-4edge.dat 4-4cyli.dat 4-4ring3.dat 4-4disc.dat'.indexOf(partName) !== -1) {
+				isPrimitive = true;
 			}
+
+			$.ajax({
+				type: 'GET',
+				url: 'LDraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
+				success: (partFile: string) => {
+					var parsedFile = Parser.FileParser.Parse(partFile);
+					returnFile = parsedFile;
+					// Parser.FileCache[partName.toUpperCase()] = parsedFile;
+
+					FileService.getSubparts(parsedFile, () => {
+						callback(returnFile);
+					});
+				},
+				error: () => {
+					if (!isPrimitive) {
+						FileService.GetLdrawFile(partName, callback, true);
+					}
+				},
+				dataType: 'text'
+			});
+			
+			// }
 		}
 
 		private static getSubparts(part: LdrawVisualizer.LdrawFile, callback: () => any) {
