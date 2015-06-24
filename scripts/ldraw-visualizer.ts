@@ -10,7 +10,7 @@ module LdrawVisualizer {
 	var camera, controls, scene, renderer, ldrawFile: LdrawFile;
 	var showAxes = true;
 
-	FileService.GetLdrawFile('3001.dat', (parsedFile: LdrawFile) => {
+	FileService.GetLdrawFile('test.ldr', /*'884.dat',*/ (parsedFile: LdrawFile) => {
 		ldrawFile = parsedFile;
 		console.log(parsedFile);
 		init();
