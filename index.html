@@ -20,7 +20,35 @@
 		<script src="lib/threejs/three.min.js"></script>
 		<script src="lib/threejs/Detector.js"></script>
 		<script src="lib/threejs/OrbitControls.js"></script>
-		<script src="scripts/ldraw-visualizer.js"></script>
+		
+		<script src="compiled/scripts/utility.js"></script>
+		<script src="compiled/scripts/parser/Color.js"></script>
+		<script src="compiled/scripts/parser/Coordinates.js"></script>
+		<script src="compiled/scripts/parser/lines/LineTypes.js"></script>
+		<script src="compiled/scripts/parser/lines/LdrawFileLine.js"></script>
+		<script src="compiled/scripts/parser/lines/CommentLine.js"></script>
+		<script src="compiled/scripts/parser/lines/LineLine.js"></script>
+		<script src="compiled/scripts/parser/lines/OptionalLineline.js"></script>
+		<script src="compiled/scripts/parser/lines/QuadrilateralLine.js"></script>
+		<script src="compiled/scripts/parser/lines/SubFileReferenceLine.js"></script>
+		<script src="compiled/scripts/parser/lines/TriangleLine.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/METALine.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/AuthorMETALine.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/ColourMETALine.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/NameMETALine.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/PartDescription.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/RotationCenterMETALine.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/RotationConfigMETALine.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/RotationStepMETALine.js"></script>
+		<script src="compiled/scripts/parser/lines/meta-lines/StepMETALine.js"></script>
+		<script src="compiled/scripts/renderer/ColorLookup.js"></script>
+		<script src="compiled/scripts/renderer/LdrawFileRenderer.js"></script>
+		
+		<script src="compiled/scripts/parser/FileParser.js"></script>
+		<script src="compiled/scripts/parser/FileService.js"></script>
+		<script src="compiled/scripts/parser/LdrawFile.js"></script>
+		
+		<script src="compiled/scripts/ldraw-visualizer.js"></script>
 	</body>
 
 </html>

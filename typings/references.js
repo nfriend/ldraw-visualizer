@@ -12,5 +12,5 @@
 /// <reference path="threejs/three-trackballcontrols.d.ts" />
 /// <reference path="threejs/three.d.ts" />
 /// <reference path="webrtc/MediaStream.d.ts" />
-/// <reference path="webrtc/RTCPeerConnection.d.ts" />
-/// <reference path="node/node-0.11.d.ts" />
+/// <reference path="webrtc/RTCPeerConnection.d.ts" /> 
+//# sourceMappingURL=references.js.map

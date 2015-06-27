@@ -2,64 +2,41 @@
 /// <reference path="./LdrawFile.ts" />
 /// <reference path="./lines/LineTypes.ts" />
 /// <reference path="./FileParser.ts" />
-/// <reference path="./FileCache.ts" />
 
 module LdrawVisualizer {
 
 	export class FileService {
 
-		static GetLdrawFile(partName: string, callback: (file: LdrawVisualizer.LdrawFile) => void, isPrimitive: boolean = false) {
-			var returnFile: LdrawVisualizer.LdrawFile;
-			// if (Parser.FileCache[partName.toUpperCase()]) {
-			// 	FileService.getSubparts(Parser.FileCache[partName.toUpperCase()], () => {
-			// 		callback(returnFile);
-			// 	});
-			// } else {
-				
-			// temporary, to avoid millions of console errors
-			if ('stud4.dat box5.dat box3u2p.dat stud.dat 4-4edge.dat 4-4cyli.dat 4-4ring3.dat 4-4disc.dat'.indexOf(partName) !== -1) {
-				isPrimitive = true;
-			}
+		static GetLdrawFile(ldrawFile: string, callback: (file: LdrawVisualizer.LdrawFile) => void, isDev: boolean = true) {
+			var returnFile: LdrawVisualizer.LdrawFile,
+				url = isDev ? 'http://localhost:17352/' : './parts-server/';
 
 			$.ajax({
-				type: 'GET',
-				url: 'LDraw/' + (isPrimitive ? 'p' : 'parts') + '/' + partName,
-				success: (partFile: string) => {
-					var parsedFile = Parser.FileParser.Parse(partFile);
-					returnFile = parsedFile;
-					// Parser.FileCache[partName.toUpperCase()] = parsedFile;
-
-					FileService.getSubparts(parsedFile, () => {
-						callback(returnFile);
-					});
-				},
-				error: () => {
-					if (!isPrimitive) {
-						FileService.GetLdrawFile(partName, callback, true);
-					}
-				},
-				dataType: 'text'
-			});
-			
-			// }
-		}
-
-		private static getSubparts(part: LdrawVisualizer.LdrawFile, callback: () => any) {
-			var allSubFileRefs = part.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.SubFileReference);
-			if (allSubFileRefs.length > 0) {
-				var completedCount = 0;
-				allSubFileRefs.forEach(l => {
-					FileService.GetLdrawFile((<Parser.Lines.SubFileReferenceLine>l).Filename, (file) => {
-						(<Parser.Lines.SubFileReferenceLine>l).File = file;
-						completedCount++;
-						if (completedCount == allSubFileRefs.length) {
-							callback();
+				type: 'POST',
+				url: url,
+				data: { file: ldrawFile },
+				success: (files: { [filename: string]: string }) => {
+					var parsedFiles: { [filename: string]: LdrawFile } = {};
+					for (var prop in files) {
+						if (files.hasOwnProperty(prop)) {
+							parsedFiles[prop] = (Parser.FileParser.Parse(files[prop]));
 						}
-					});
-				});
-			} else {
-				callback();
-			}
+					}
+
+					for (var prop in parsedFiles) {
+						if (parsedFiles.hasOwnProperty(prop)) {
+							parsedFiles[prop].Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.SubFileReference).forEach(l => {
+								var subfile = (<Parser.Lines.SubFileReferenceLine>l);
+								subfile.File = parsedFiles[subfile.Filename];
+							});
+						}
+					}
+					
+					console.log(parsedFiles['$rootfile$']);
+					callback(parsedFiles['$rootfile$']);
+				},
+				dataType: 'JSON'
+			});
 		}
 	}
 }

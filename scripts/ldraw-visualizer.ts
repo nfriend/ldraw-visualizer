@@ -10,9 +10,8 @@ module LdrawVisualizer {
 	var camera, controls, scene, renderer, ldrawFile: LdrawFile;
 	var showAxes = false;
 
-	FileService.GetLdrawFile('test.ldr', /*'884.dat',*/ (parsedFile: LdrawFile) => {
+	FileService.GetLdrawFile('1 2 0 0 0 1 0 0 0 1 0 0 0 1 884.dat', (parsedFile: LdrawFile) => {
 		ldrawFile = parsedFile;
-		console.log(parsedFile);
 		$('#loading').remove();
 		init();
 		render();

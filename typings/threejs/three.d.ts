@@ -1,9 +1,7 @@
 // Type definitions for three.js r71
 // Project: http://mrdoob.github.com/three.js/
 // Definitions by: Kon <http://phyzkit.net/>, Satoru Kimura <https://github.com/gyohk>
-// Definitions: https://github.com/borisyankov/DefinitelyTyped  
-
-///<reference path="../webaudioapi/waa.d.ts"/>
+// Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 interface WebGLRenderingContext {}
 

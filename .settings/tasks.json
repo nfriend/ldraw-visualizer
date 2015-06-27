@@ -12,7 +12,7 @@
 	"version": "0.1.5",
 	
 	// The command is tsc. Assumes that tsc has been installed using npm install -g typescript
-	"command": "tsc",
+	"command": "tsc --outDir compiled",
 	
 	// The command is a shell script
 	"isShellCommand": true,
@@ -21,7 +21,7 @@
 	"showOutput": "silent",
 	
 	// args is the HelloWorld program to compile.
-	"args": ["--out", "./scripts/ldraw-visualizer.js"],
+	//"args": ["--outDir", "compiled"],
 	
 	// use the standard tsc problem matcher to find compile problems
 	// in the output.
