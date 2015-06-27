@@ -5,7 +5,7 @@
 module LdrawVisualizer.Renderer {
 	export var ColorLookup: { [code: number]: { hex: number, alpha?: number } } = {
 		
-		// black
+		/*// black
 		0: { hex: 0x000000 },
 		
 		// blue
@@ -42,7 +42,7 @@ module LdrawVisualizer.Renderer {
 		256: { hex: 0x212121 },
 		
 		// chrome silver
-		383: { hex: 0xE0E0E0 },
+		383: { hex: 0xE0E0E0 },*/
 		
 	}
 }

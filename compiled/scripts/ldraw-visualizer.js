@@ -6,30 +6,38 @@ var LdrawVisualizer;
     if (!Detector.webgl)
         Detector.addGetWebGLMessage();
     var container;
-    var camera, controls, scene, renderer, ldrawFile;
+    var camera, controls, scene, renderer, ldrawFiles = [], ldconfig;
     var showAxes = false;
-    LdrawVisualizer.FileService.GetLdrawFile('1 2 0 0 0 1 0 0 0 1 0 0 0 1 884.dat', function (parsedFile) {
-        ldrawFile = parsedFile;
-        $('#loading').remove();
-        init();
-        render();
+    var modelToGet = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : encodeURIComponent('CAR.DAT');
+    $.ajax({
+        type: 'GET',
+        url: './models/' + modelToGet,
+        success: function (modelFile) {
+            LdrawVisualizer.FileService.GetLdrawFile(modelFile, function (parsedFile, parsedLdconfig) {
+                ldrawFiles.push(parsedFile);
+                ldconfig = parsedLdconfig;
+                $('#loading').remove();
+                init();
+                render();
+            });
+        }
     });
     function animate() {
         requestAnimationFrame(animate);
         controls.update();
     }
     function init() {
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-        camera.position.z = -200;
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
+        camera.position.z = -500;
         controls = new THREE.OrbitControls(camera);
         controls.damping = 0.2;
         controls.addEventListener('change', render);
         scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x111111, 0.002);
+        scene.fog = new THREE.FogExp2(0x111111, 0.001);
         if (showAxes) {
             scene.add(buildAxes(1000));
         }
-        LdrawVisualizer.Renderer.LdrawFileRenderer.Render(scene, ldrawFile);
+        LdrawVisualizer.Renderer.LdrawFileRenderer.Render(scene, ldconfig, ldrawFiles);
         // lights
         var directionalLight = new THREE.DirectionalLight(0xCCCCCC);
         directionalLight.position.set(1, .6, -.2);

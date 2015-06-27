@@ -48,4 +48,8 @@ module LdrawVisualizer.Utility {
 		console.log(e[3], e[7], e[11], e[15]);
 		console.log('---------------');
 	}
+	
+	export function hexStringToHexNumber(hexString: string): number {
+		return parseInt(hexString.replace(/#/g, ''), 16);
+	}
 }	

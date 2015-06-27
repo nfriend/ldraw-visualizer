@@ -1,0 +1,75 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files (x86)\\nodejs\\\\node.exe',
+1 verbose cli   'C:\\Program Files (x86)\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'version',
+1 verbose cli   'minor' ]
+2 info using npm@2.7.4
+3 info using node@v0.12.2
+4 verbose node symlink C:\Program Files (x86)\nodejs\\node.exe
+5 info git [ 'status', '--porcelain' ]
+6 verbose stack Error: Git working directory not clean.
+6 verbose stack M Gruntfile.js
+6 verbose stack M compiled/parts-server/file-fetcher.js
+6 verbose stack M compiled/parts-server/file-fetcher.js.map
+6 verbose stack M compiled/scripts/ldraw-visualizer.js
+6 verbose stack M compiled/scripts/ldraw-visualizer.js.map
+6 verbose stack M compiled/scripts/parser/Color.js
+6 verbose stack M compiled/scripts/parser/Color.js.map
+6 verbose stack M compiled/scripts/parser/FileService.js
+6 verbose stack M compiled/scripts/parser/FileService.js.map
+6 verbose stack M compiled/scripts/renderer/ColorLookup.js
+6 verbose stack M compiled/scripts/renderer/ColorLookup.js.map
+6 verbose stack M compiled/scripts/renderer/LdrawFileRenderer.js
+6 verbose stack M compiled/scripts/renderer/LdrawFileRenderer.js.map
+6 verbose stack M compiled/scripts/utility.js
+6 verbose stack M compiled/scripts/utility.js.map
+6 verbose stack M dist/index.html
+6 verbose stack M dist/ldraw-visualizer-0.0.4.min.js
+6 verbose stack M parts-server/file-fetcher.ts
+6 verbose stack M scripts/ldraw-visualizer.ts
+6 verbose stack M scripts/parser/Color.ts
+6 verbose stack M scripts/parser/FileService.ts
+6 verbose stack M scripts/renderer/ColorLookup.ts
+6 verbose stack M scripts/renderer/LdrawFileRenderer.ts
+6 verbose stack M scripts/utility.ts
+6 verbose stack     at C:\Program Files (x86)\nodejs\node_modules\npm\lib\version.js:138:37
+6 verbose stack     at C:\Program Files (x86)\nodejs\node_modules\npm\lib\utils\git.js:26:8
+6 verbose stack     at ChildProcess.exithandler (child_process.js:742:7)
+6 verbose stack     at ChildProcess.emit (events.js:110:17)
+6 verbose stack     at maybeClose (child_process.js:1015:16)
+6 verbose stack     at Socket.<anonymous> (child_process.js:1183:11)
+6 verbose stack     at Socket.emit (events.js:107:17)
+6 verbose stack     at Pipe.close (net.js:485:12)
+7 verbose cwd C:\Users\Nathan\Documents\GitHub\ldraw-visualizer
+8 error Windows_NT 6.3.9600
+9 error argv "C:\\Program Files (x86)\\nodejs\\\\node.exe" "C:\\Program Files (x86)\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "version" "minor"
+10 error node v0.12.2
+11 error npm  v2.7.4
+12 error Git working directory not clean.
+12 error M Gruntfile.js
+12 error M compiled/parts-server/file-fetcher.js
+12 error M compiled/parts-server/file-fetcher.js.map
+12 error M compiled/scripts/ldraw-visualizer.js
+12 error M compiled/scripts/ldraw-visualizer.js.map
+12 error M compiled/scripts/parser/Color.js
+12 error M compiled/scripts/parser/Color.js.map
+12 error M compiled/scripts/parser/FileService.js
+12 error M compiled/scripts/parser/FileService.js.map
+12 error M compiled/scripts/renderer/ColorLookup.js
+12 error M compiled/scripts/renderer/ColorLookup.js.map
+12 error M compiled/scripts/renderer/LdrawFileRenderer.js
+12 error M compiled/scripts/renderer/LdrawFileRenderer.js.map
+12 error M compiled/scripts/utility.js
+12 error M compiled/scripts/utility.js.map
+12 error M dist/index.html
+12 error M dist/ldraw-visualizer-0.0.4.min.js
+12 error M parts-server/file-fetcher.ts
+12 error M scripts/ldraw-visualizer.ts
+12 error M scripts/parser/Color.ts
+12 error M scripts/parser/FileService.ts
+12 error M scripts/renderer/ColorLookup.ts
+12 error M scripts/renderer/LdrawFileRenderer.ts
+12 error M scripts/utility.ts
+13 error If you need help, you may report this error at:
+13 error     <https://github.com/npm/npm/issues>
+14 verbose exit [ 1, true ]

@@ -9,30 +9,47 @@ var LdrawVisualizer;
         var LdrawFileRenderer = (function () {
             function LdrawFileRenderer() {
             }
-            LdrawFileRenderer.Render = function (scene, ldrawFile) {
-                var geometries = this.render(ldrawFile);
-                for (var prop in geometries) {
-                    if (geometries.hasOwnProperty(prop)) {
-                        var combinedGeom = new THREE.Geometry();
-                        geometries[prop].forEach(function (g) {
-                            combinedGeom.merge(g, new THREE.Matrix4(), 0);
-                        });
-                        var color = typeof Renderer.ColorLookup[prop] !== 'undefined' ? Renderer.ColorLookup[prop] : { hex: 0, alpha: 255 };
-                        var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
-                        if (color.alpha) {
-                            legoMaterial.transparent = true;
-                            legoMaterial.opacity = color.alpha / 255;
+            LdrawFileRenderer.Render = function (scene, ldconfig, ldrawFiles) {
+                var _this = this;
+                ldrawFiles.unshift(ldconfig);
+                ldrawFiles.forEach(function (ldrawFile) {
+                    var geometries = _this.render(ldrawFile);
+                    for (var prop in geometries) {
+                        if (geometries.hasOwnProperty(prop)) {
+                            var combinedGeom = new THREE.Geometry();
+                            geometries[prop].forEach(function (g) {
+                                combinedGeom.merge(g, new THREE.Matrix4(), 0);
+                            });
+                            var color = typeof Renderer.ColorLookup[prop] !== 'undefined' ? Renderer.ColorLookup[prop] : { hex: 0, alpha: 255 };
+                            var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
+                            if (color.alpha) {
+                                legoMaterial.transparent = true;
+                                legoMaterial.opacity = color.alpha / 255;
+                            }
+                            combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+                            scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
+                            console.log('added mesh: ' + prop);
                         }
-                        combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
-                        scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
-                        console.log('added mesh: ' + prop);
                     }
-                }
+                });
             };
             LdrawFileRenderer.render = function (ldrawFile, colorCode, fullMatrix, geometries) {
                 if (colorCode === void 0) { colorCode = 0; }
                 if (fullMatrix === void 0) { fullMatrix = new THREE.Matrix4(); }
                 if (geometries === void 0) { geometries = {}; }
+                // Import all color definitions
+                ldrawFile.Lines.filter(function (l) {
+                    return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.CommentOrMETA
+                        && typeof l.METALineType !== 'undefined'
+                        && l.METALineType === LdrawVisualizer.Parser.Lines.LdrawFileMETALineType.Colour;
+                })
+                    .forEach(function (l) {
+                    var colorLine = l;
+                    Renderer.ColorLookup[colorLine.Code] = {
+                        alpha: colorLine.Alpha,
+                        hex: LdrawVisualizer.Utility.hexStringToHexNumber(colorLine.Value.HexValue)
+                    };
+                });
                 // Render all quadrilaterals
                 ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.Quadrilateral; })
                     .forEach(function (l) {

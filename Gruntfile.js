@@ -71,6 +71,11 @@ module.exports = function (grunt) {
 						src: ['./favicon.ico'],
 						dest: './dist',
 						filter: 'isFile'
+					},
+					{
+						expand: true,
+						src: ['./models/**'],
+						dest: './dist'
 					}
 				]
 			}	

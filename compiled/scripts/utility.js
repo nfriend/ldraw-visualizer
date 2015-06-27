@@ -52,6 +52,10 @@ var LdrawVisualizer;
             console.log('---------------');
         }
         Utility.logMatrix = logMatrix;
+        function hexStringToHexNumber(hexString) {
+            return parseInt(hexString.replace(/#/g, ''), 16);
+        }
+        Utility.hexStringToHexNumber = hexStringToHexNumber;
     })(Utility = LdrawVisualizer.Utility || (LdrawVisualizer.Utility = {}));
 })(LdrawVisualizer || (LdrawVisualizer = {}));
 //# sourceMappingURL=utility.js.map

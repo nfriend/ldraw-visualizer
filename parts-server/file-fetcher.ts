@@ -2,8 +2,10 @@
 var fs = require('fs');
 
 var files: { [filename: string]: string } = {},
-	partsDirectory = '../../LDraw/parts/',
-	pDirectory = '../../LDraw/p/';
+	encoding = 'utf-8',
+	rootDirectory = '../../LDraw/',
+	partsDirectory = rootDirectory + 'parts/',
+	pDirectory = rootDirectory + 'p/';
 
 var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: string]: string }) => void) => {
 	
@@ -44,7 +46,7 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 				if (err === null) {
 					// we found the file in the parts directory 
 					
-					fs.readFile(partsDirectory + filename, 'utf-8', (err, data) => {
+					fs.readFile(partsDirectory + filename, encoding, (err, data) => {
 						files[filename] = data;
 						
 						// fetch this file's subfiles
@@ -60,7 +62,7 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 					
 					fs.stat(pDirectory + filename, (err, stat) => {
 						if (err === null) {
-							fs.readFile(pDirectory + filename, 'utf-8', (err, data) => {
+							fs.readFile(pDirectory + filename, encoding, (err, data) => {
 								files[filename] = data;
 								
 								// fetch this file's subfiles
@@ -102,6 +104,18 @@ module.exports = {
 		files['$rootfile$'] = rootFile;
 		
 		// begin the recursive subfile-fetching process
-		getSubfiles(rootFile, completedCallback);
+		getSubfiles(rootFile, (allFiles) => {
+			
+			// also get LDConfig.ldr
+			var ldConfigFilename = 'LDConfig.ldr';
+			fs.readFile(rootDirectory + ldConfigFilename, encoding, (err, data) => {
+				if (err === null) {
+					allFiles[ldConfigFilename] = data;
+					completedCallback(allFiles);
+				} else {
+					throw 'LDConfig.ldr not found';
+				}
+			});
+		});
 	}
 }

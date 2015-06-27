@@ -7,7 +7,7 @@ module LdrawVisualizer {
 
 	export class FileService {
 
-		static GetLdrawFile(ldrawFile: string, callback: (file: LdrawVisualizer.LdrawFile) => void, isDev: boolean = true) {
+		static GetLdrawFile(ldrawFile: string, callback: (file: LdrawVisualizer.LdrawFile, ldconfig: LdrawVisualizer.LdrawFile) => void, isDev: boolean = true) {
 			var returnFile: LdrawVisualizer.LdrawFile,
 				url = isDev ? 'http://localhost:17352/' : './parts-server/';
 
@@ -32,8 +32,7 @@ module LdrawVisualizer {
 						}
 					}
 					
-					console.log(parsedFiles['$rootfile$']);
-					callback(parsedFiles['$rootfile$']);
+					callback(parsedFiles['$rootfile$'], parsedFiles['LDConfig.ldr']);
 				},
 				dataType: 'JSON'
 			});

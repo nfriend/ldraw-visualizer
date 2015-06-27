@@ -29,8 +29,7 @@ var LdrawVisualizer;
                             });
                         }
                     }
-                    console.log(parsedFiles['$rootfile$']);
-                    callback(parsedFiles['$rootfile$']);
+                    callback(parsedFiles['$rootfile$'], parsedFiles['LDConfig.ldr']);
                 },
                 dataType: 'JSON'
             });

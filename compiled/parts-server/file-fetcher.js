@@ -1,6 +1,6 @@
 /// <reference path="../typings/references.ts" />
 var fs = require('fs');
-var files = {}, partsDirectory = '../../LDraw/parts/', pDirectory = '../../LDraw/p/';
+var files = {}, encoding = 'utf-8', rootDirectory = '../../LDraw/', partsDirectory = rootDirectory + 'parts/', pDirectory = rootDirectory + 'p/';
 var getSubfiles = function (rootFile, completedCallback) {
     // the file split into individual lines; 
     var lines = rootFile.split(/\r?\n/g);
@@ -31,7 +31,7 @@ var getSubfiles = function (rootFile, completedCallback) {
             fs.stat(partsDirectory + filename, function (err, stat) {
                 if (err === null) {
                     // we found the file in the parts directory 
-                    fs.readFile(partsDirectory + filename, 'utf-8', function (err, data) {
+                    fs.readFile(partsDirectory + filename, encoding, function (err, data) {
                         files[filename] = data;
                         // fetch this file's subfiles
                         getSubfiles(data, function () {
@@ -46,7 +46,7 @@ var getSubfiles = function (rootFile, completedCallback) {
                     // we didn't find the file in the parts directory, look in the p directory
                     fs.stat(pDirectory + filename, function (err, stat) {
                         if (err === null) {
-                            fs.readFile(pDirectory + filename, 'utf-8', function (err, data) {
+                            fs.readFile(pDirectory + filename, encoding, function (err, data) {
                                 files[filename] = data;
                                 // fetch this file's subfiles
                                 getSubfiles(data, function () {
@@ -83,7 +83,19 @@ module.exports = {
         // store the provided file in the "files" object
         files['$rootfile$'] = rootFile;
         // begin the recursive subfile-fetching process
-        getSubfiles(rootFile, completedCallback);
+        getSubfiles(rootFile, function (allFiles) {
+            // also get LDConfig.ldr
+            var ldConfigFilename = 'LDConfig.ldr';
+            fs.readFile(rootDirectory + ldConfigFilename, encoding, function (err, data) {
+                if (err === null) {
+                    allFiles[ldConfigFilename] = data;
+                    completedCallback(allFiles);
+                }
+                else {
+                    throw 'LDConfig.ldr not found';
+                }
+            });
+        });
     }
 };
 //# sourceMappingURL=file-fetcher.js.map

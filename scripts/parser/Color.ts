@@ -3,13 +3,11 @@
 
 module LdrawVisualizer.Parser {
 	export class Color {
-		constructor(hexValue: string, alpha: number = 255) {
+		constructor(hexValue: string) {
 			this.HexValue = hexValue;
-			this.Alpha = alpha;
 		}
 		
 		HexValue: string;
-		Alpha: number;
 		
 		IsValid(): boolean {
 			return Utility.isValidColorHexString(this.HexValue);
