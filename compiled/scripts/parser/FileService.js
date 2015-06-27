@@ -9,7 +9,7 @@ var LdrawVisualizer;
         }
         FileService.GetLdrawFile = function (ldrawFile, callback, isDev) {
             if (isDev === void 0) { isDev = true; }
-            var returnFile, url = isDev ? 'http://localhost:17352/' : './parts-server/';
+            var returnFile, url = isDev ? 'http://localhost:17352/' : './parts-server';
             $.ajax({
                 type: 'POST',
                 url: url,
@@ -25,7 +25,7 @@ var LdrawVisualizer;
                         if (parsedFiles.hasOwnProperty(prop)) {
                             parsedFiles[prop].Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.SubFileReference; }).forEach(function (l) {
                                 var subfile = l;
-                                subfile.File = parsedFiles[subfile.Filename];
+                                subfile.File = parsedFiles[LdrawVisualizer.Utility.fixFilePath(subfile.Filename)];
                             });
                         }
                     }

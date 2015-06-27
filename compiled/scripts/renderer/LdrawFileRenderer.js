@@ -11,6 +11,7 @@ var LdrawVisualizer;
             }
             LdrawFileRenderer.Render = function (scene, ldconfig, ldrawFiles) {
                 var _this = this;
+                console.log(ldrawFiles);
                 ldrawFiles.unshift(ldconfig);
                 ldrawFiles.forEach(function (ldrawFile) {
                     var geometries = _this.render(ldrawFile);

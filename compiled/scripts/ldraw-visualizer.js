@@ -9,6 +9,7 @@ var LdrawVisualizer;
     var camera, controls, scene, renderer, ldrawFiles = [], ldconfig;
     var showAxes = false;
     var modelToGet = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : encodeURIComponent('CAR.DAT');
+    var isDev = document.location.hostname === 'localhost' || document.location.hostname === '127.0.0.1';
     $.ajax({
         type: 'GET',
         url: './models/' + modelToGet,
@@ -19,7 +20,7 @@ var LdrawVisualizer;
                 $('#loading').remove();
                 init();
                 render();
-            });
+            }, isDev);
         }
     });
     function animate() {

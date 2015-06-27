@@ -7,6 +7,7 @@ module LdrawVisualizer.Renderer {
 	export class LdrawFileRenderer {
 
 		static Render(scene: THREE.Scene, ldconfig: LdrawFile, ldrawFiles: LdrawFile[]) {
+			console.log(ldrawFiles);
 			ldrawFiles.unshift(ldconfig);
 			ldrawFiles.forEach(ldrawFile => {
 				var geometries = this.render(ldrawFile);

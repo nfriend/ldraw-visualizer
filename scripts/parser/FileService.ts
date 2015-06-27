@@ -9,7 +9,7 @@ module LdrawVisualizer {
 
 		static GetLdrawFile(ldrawFile: string, callback: (file: LdrawVisualizer.LdrawFile, ldconfig: LdrawVisualizer.LdrawFile) => void, isDev: boolean = true) {
 			var returnFile: LdrawVisualizer.LdrawFile,
-				url = isDev ? 'http://localhost:17352/' : './parts-server/';
+				url = isDev ? 'http://localhost:17352/' : './parts-server';
 
 			$.ajax({
 				type: 'POST',
@@ -27,7 +27,7 @@ module LdrawVisualizer {
 						if (parsedFiles.hasOwnProperty(prop)) {
 							parsedFiles[prop].Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.SubFileReference).forEach(l => {
 								var subfile = (<Parser.Lines.SubFileReferenceLine>l);
-								subfile.File = parsedFiles[subfile.Filename];
+								subfile.File = parsedFiles[Utility.fixFilePath(subfile.Filename)];
 							});
 						}
 					}

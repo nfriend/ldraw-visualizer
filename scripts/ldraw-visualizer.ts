@@ -9,8 +9,8 @@ module LdrawVisualizer {
 	var container;
 	var camera, controls, scene, renderer, ldrawFiles: LdrawFile[] = [], ldconfig: LdrawFile;
 	var showAxes = false;
-
 	var modelToGet = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : encodeURIComponent('CAR.DAT');
+	var isDev = document.location.hostname === 'localhost' || document.location.hostname === '127.0.0.1';
 
 	$.ajax({
 		type: 'GET',
@@ -23,8 +23,7 @@ module LdrawVisualizer {
 				$('#loading').remove();
 				init();
 				render();
-			});
-
+			}, isDev);
 		}
 	})
 
@@ -47,8 +46,7 @@ module LdrawVisualizer {
 		if (showAxes) {
 			scene.add(buildAxes(1000));
 		}
-
-
+		
 		Renderer.LdrawFileRenderer.Render(scene, ldconfig, ldrawFiles);
 
 		// lights

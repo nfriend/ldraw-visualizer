@@ -3,7 +3,7 @@ var fs = require('fs');
 
 var files: { [filename: string]: string } = {},
 	encoding = 'utf-8',
-	rootDirectory = '../../LDraw/',
+	rootDirectory = __dirname + '/../../LDraw/',
 	partsDirectory = rootDirectory + 'parts/',
 	pDirectory = rootDirectory + 'p/';
 
@@ -35,6 +35,8 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 	});
 
 	filenames.forEach((filename, i, arr) => {
+		filename = filename.toLowerCase().replace(/\\/g, '/');
+		
 		if (!(filename in files)) {
 			// if we haven't already fetched this file (or at least started the fetching process)
 			
@@ -74,7 +76,7 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 								});
 							});
 						} else {
-							throw { isPartNotFoundError: true, message: 'Part not found: ' + filename };
+							throw JSON.stringify({ isPartNotFoundError: true, message: 'Part not found: ' + filename });
 						}
 					});
 				}

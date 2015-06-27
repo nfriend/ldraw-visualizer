@@ -56,6 +56,10 @@ var LdrawVisualizer;
             return parseInt(hexString.replace(/#/g, ''), 16);
         }
         Utility.hexStringToHexNumber = hexStringToHexNumber;
+        function fixFilePath(filePath) {
+            return filePath.toLowerCase().replace(/\\/g, '/');
+        }
+        Utility.fixFilePath = fixFilePath;
     })(Utility = LdrawVisualizer.Utility || (LdrawVisualizer.Utility = {}));
 })(LdrawVisualizer || (LdrawVisualizer = {}));
 //# sourceMappingURL=utility.js.map

@@ -10,7 +10,6 @@ var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.post('/', (req, res) => {
-	console.log(req.body);
 	fileFetcher.fetchFiles(req.body.file, (allFiles: string[]) => {
 		res.status(200).send(allFiles);
 	});

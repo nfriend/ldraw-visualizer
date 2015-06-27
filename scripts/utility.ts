@@ -52,4 +52,8 @@ module LdrawVisualizer.Utility {
 	export function hexStringToHexNumber(hexString: string): number {
 		return parseInt(hexString.replace(/#/g, ''), 16);
 	}
+	
+	export function fixFilePath(filePath: string): string {
+		return filePath.toLowerCase().replace(/\\/g, '/');
+	}
 }	
