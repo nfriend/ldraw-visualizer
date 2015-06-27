@@ -46,5 +46,6 @@ module LdrawVisualizer.Utility {
 		console.log(e[1], e[5], e[9], e[13]);
 		console.log(e[2], e[6], e[10], e[14]);
 		console.log(e[3], e[7], e[11], e[15]);
+		console.log('---------------');
 	}
 }	

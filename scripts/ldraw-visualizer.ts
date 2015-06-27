@@ -41,15 +41,15 @@ module LdrawVisualizer {
 		Renderer.LdrawFileRenderer.Render(scene, ldrawFile);
 
 		// lights
-		var directionalLight = new THREE.DirectionalLight(0xffffff);
+		var directionalLight = new THREE.DirectionalLight(0xCCCCCC);
 		directionalLight.position.set(1, .6, -.2);
 		scene.add(directionalLight);
 
-		directionalLight = new THREE.DirectionalLight(0xffffff);
+		directionalLight = new THREE.DirectionalLight(0xCCCCCC);
 		directionalLight.position.set(-1, -1.5, 1.7);
 		scene.add(directionalLight);
 
-		var ambientLight = new THREE.AmbientLight(0x000000);
+		var ambientLight = new THREE.AmbientLight(0x333333);
 		scene.add(ambientLight);
 		
 		// renderer
