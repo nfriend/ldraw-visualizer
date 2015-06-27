@@ -3,10 +3,18 @@
 		<title>LDraw Visualizer</title>
 		<link href="./styles/ldraw-visualizer.css" rel="stylesheet" type="text/css" />
 		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" class="dom_munger-ignore">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+		<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css'>
+		<style>
+			html, body {
+				font-family: 'Roboto Condensed', sans-serif;
+			}
+		</style>
 	</head>
 	<body>
+		<div id="loading" style="position: absolute; width: 100%; text-align: center; margin-top: 100px; font-size: 24px">
+			<i class="fa fa-refresh fa-spin"></i>&nbsp;&nbsp;Loading model. One moment...</div>
 		<div id="container"></div>
-		
 		<script class="dom_munger-ignore dom_munger-remove" src="//localhost:35729/livereload.js"></script>
 		<script src="lib/jquery/jquery-2.1.4.min.js"></script>
 		<script src="lib/threejs/three.min.js"></script>
@@ -14,4 +22,5 @@
 		<script src="lib/threejs/OrbitControls.js"></script>
 		<script src="scripts/ldraw-visualizer.js"></script>
 	</body>
+
 </html>

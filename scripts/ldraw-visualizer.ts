@@ -8,11 +8,12 @@ module LdrawVisualizer {
 
 	var container;
 	var camera, controls, scene, renderer, ldrawFile: LdrawFile;
-	var showAxes = true;
+	var showAxes = false;
 
 	FileService.GetLdrawFile('test.ldr', /*'884.dat',*/ (parsedFile: LdrawFile) => {
 		ldrawFile = parsedFile;
 		console.log(parsedFile);
+		$('#loading').remove();
 		init();
 		render();
 	});
@@ -24,7 +25,7 @@ module LdrawVisualizer {
 
 	function init() {
 		camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-		camera.position.z = 200;
+		camera.position.z = -200;
 
 		controls = new THREE.OrbitControls(camera);
 		controls.damping = 0.2;
@@ -47,6 +48,10 @@ module LdrawVisualizer {
 
 		directionalLight = new THREE.DirectionalLight(0xCCCCCC);
 		directionalLight.position.set(-1, -1.5, 1.7);
+		scene.add(directionalLight);
+		
+		directionalLight = new THREE.DirectionalLight(0xFFFFFF);
+		directionalLight.position.set(-20, 70, -60);
 		scene.add(directionalLight);
 
 		var ambientLight = new THREE.AmbientLight(0x333333);
