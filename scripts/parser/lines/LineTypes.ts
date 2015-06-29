@@ -15,6 +15,7 @@ module LdrawVisualizer.Parser.Lines {
 		Author = 3,
 		RotationCenter = 4,
 		RotationConfig = 5,
-		RotationStep = 6
+		RotationStep = 6,
+		LDrawOrg = 7
 	}
 }

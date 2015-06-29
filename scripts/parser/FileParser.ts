@@ -18,6 +18,7 @@
 /// <reference path="./lines/meta-lines/RotationConfigMETALine.ts" />
 /// <reference path="./lines/meta-lines/StepMETALine.ts" />
 /// <reference path="./lines/meta-lines/RotationStepMETALine.ts" />
+/// <reference path="./lines/meta-lines/LdrawOrgMETALine.ts" />
 
 module LdrawVisualizer.Parser {
 	export class FileParser {

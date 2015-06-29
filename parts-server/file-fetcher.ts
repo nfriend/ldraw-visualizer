@@ -39,7 +39,7 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 		
 		if (!(filename in files)) {
 			// if we haven't already fetched this file (or at least started the fetching process)
-			
+
 			// create a placeholder for this file so we won't try and fetch it again
 			files[filename] = null;
 			
@@ -76,7 +76,7 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 								});
 							});
 						} else {
-							throw JSON.stringify({ isPartNotFoundError: true, message: 'Part not found: ' + filename });
+							throw { isPartNotFoundError: true, message: 'Part not found: ' + filename };
 						}
 					});
 				}

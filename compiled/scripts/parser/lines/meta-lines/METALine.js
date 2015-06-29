@@ -57,6 +57,9 @@ var LdrawVisualizer;
                             return null;
                         }
                     }
+                    else if (/!?LDRAW_ORG/.test(metaTag)) {
+                        return Lines.LdrawOrgMETALine.Parse(line, splitLine, lineNumber);
+                    }
                     else {
                         //console.log('Unknown or unimplemented META tag on line ' + lineNumber + ': "' + metaTag + '"');
                         return null;

@@ -4,37 +4,55 @@
 /// <reference path="./ColorLookup.ts" />
 
 module LdrawVisualizer.Renderer {
+	
+	// represents all geometries involved in rendering a single part,
+	// organized by color
+	interface PartGeometries {
+		[color: number]: THREE.Geometry[];
+	}
+
 	export class LdrawFileRenderer {
 
 		static Render(scene: THREE.Scene, ldconfig: LdrawFile, ldrawFiles: LdrawFile[]) {
 			console.log(ldrawFiles);
 			ldrawFiles.unshift(ldconfig);
 			ldrawFiles.forEach(ldrawFile => {
-				var geometries = this.render(ldrawFile);
-				for (var prop in geometries) {
-					if (geometries.hasOwnProperty(prop)) {
-						var combinedGeom = new THREE.Geometry();
-						geometries[prop].forEach(g => {
-							combinedGeom.merge(g, new THREE.Matrix4(), 0);
-						})
-						var color = typeof ColorLookup[prop] !== 'undefined' ? ColorLookup[prop] : { hex: 0, alpha: 255 };
-						var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
-						if (color.alpha) {
-							legoMaterial.transparent = true;
-							legoMaterial.opacity = color.alpha / 255;
+				var partGeometries: Array<PartGeometries> = this.render(ldrawFile);
+				partGeometries.forEach(geometries => {
+					for (var prop in geometries) {
+						if (geometries.hasOwnProperty(prop)) {
+							var combinedGeom = new THREE.Geometry();
+							geometries[prop].forEach(g => {
+								combinedGeom.merge(g, new THREE.Matrix4(), 0);
+							})
+							var color = typeof ColorLookup[prop] !== 'undefined' ? ColorLookup[prop] : { hex: 0, alpha: 255 };							
+							var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
+							if (color.alpha) {
+								legoMaterial.transparent = true;
+								legoMaterial.opacity = color.alpha / 255;
+							}
+							combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+							scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
 						}
-						combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
-						scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
-						console.log('added mesh: ' + prop);
 					}
-				}
-			})
+				});
+			});
 		}
 
 		private static render(ldrawFile: LdrawFile,
 			colorCode: number = 0,
 			fullMatrix: THREE.Matrix4 = new THREE.Matrix4(),
-			geometries: { [color: number]: THREE.Geometry[] } = {}): { [color: number]: THREE.Geometry[] } {
+			geometries: Array<PartGeometries> = [{}]): Array<PartGeometries> {
+
+			var ldrawOrgLine = <Parser.Lines.LdrawOrgMETALine>ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.CommentOrMETA
+				&& typeof (<Parser.Lines.METALine>l).METALineType !== 'undefined'
+				&& (<Parser.Lines.METALine>l).METALineType === Parser.Lines.LdrawFileMETALineType.LDrawOrg)[0]
+
+			if (ldrawOrgLine && (ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Unofficial_Part)) {
+				// if we're starting a new part, push an empty object onto our list of part geometries
+				// to keep track of this part's contents
+				geometries.push({});
+			}
 				
 			// Import all color definitions
 			ldrawFile.Lines.filter(l =>
@@ -70,11 +88,11 @@ module LdrawVisualizer.Renderer {
 					geometry.computeFaceNormals();
 
 					var quadColorCode = quadLine.Color == 16 ? colorCode : quadLine.Color;
-					if (!(quadColorCode in geometries)) {
-						geometries[quadColorCode] = [];
+					if (!(quadColorCode in geometries[geometries.length - 1])) {
+						geometries[geometries.length - 1][quadColorCode] = [];
 					}
 
-					geometries[quadColorCode].push(geometry);
+					geometries[geometries.length - 1][quadColorCode].push(geometry);
 				});
 				
 			// Render all triangles
@@ -95,11 +113,11 @@ module LdrawVisualizer.Renderer {
 					geometry.computeFaceNormals();
 
 					var triColorCode = triLine.Color == 16 ? colorCode : triLine.Color;
-					if (!(triColorCode in geometries)) {
-						geometries[triColorCode] = [];
+					if (!(triColorCode in geometries[geometries.length - 1])) {
+						geometries[geometries.length - 1][triColorCode] = [];
 					}
 
-					geometries[triColorCode].push(geometry);
+					geometries[geometries.length - 1][triColorCode].push(geometry);
 				});
 				
 			// Render all subfiles

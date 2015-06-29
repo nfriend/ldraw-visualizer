@@ -14,30 +14,39 @@ var LdrawVisualizer;
                 console.log(ldrawFiles);
                 ldrawFiles.unshift(ldconfig);
                 ldrawFiles.forEach(function (ldrawFile) {
-                    var geometries = _this.render(ldrawFile);
-                    for (var prop in geometries) {
-                        if (geometries.hasOwnProperty(prop)) {
-                            var combinedGeom = new THREE.Geometry();
-                            geometries[prop].forEach(function (g) {
-                                combinedGeom.merge(g, new THREE.Matrix4(), 0);
-                            });
-                            var color = typeof Renderer.ColorLookup[prop] !== 'undefined' ? Renderer.ColorLookup[prop] : { hex: 0, alpha: 255 };
-                            var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
-                            if (color.alpha) {
-                                legoMaterial.transparent = true;
-                                legoMaterial.opacity = color.alpha / 255;
+                    var partGeometries = _this.render(ldrawFile);
+                    partGeometries.forEach(function (geometries) {
+                        for (var prop in geometries) {
+                            if (geometries.hasOwnProperty(prop)) {
+                                var combinedGeom = new THREE.Geometry();
+                                geometries[prop].forEach(function (g) {
+                                    combinedGeom.merge(g, new THREE.Matrix4(), 0);
+                                });
+                                var color = typeof Renderer.ColorLookup[prop] !== 'undefined' ? Renderer.ColorLookup[prop] : { hex: 0, alpha: 255 };
+                                var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
+                                if (color.alpha) {
+                                    legoMaterial.transparent = true;
+                                    legoMaterial.opacity = color.alpha / 255;
+                                }
+                                combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+                                scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
                             }
-                            combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
-                            scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
-                            console.log('added mesh: ' + prop);
                         }
-                    }
+                    });
                 });
             };
             LdrawFileRenderer.render = function (ldrawFile, colorCode, fullMatrix, geometries) {
                 if (colorCode === void 0) { colorCode = 0; }
                 if (fullMatrix === void 0) { fullMatrix = new THREE.Matrix4(); }
-                if (geometries === void 0) { geometries = {}; }
+                if (geometries === void 0) { geometries = [{}]; }
+                var ldrawOrgLine = ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.CommentOrMETA
+                    && typeof l.METALineType !== 'undefined'
+                    && l.METALineType === LdrawVisualizer.Parser.Lines.LdrawFileMETALineType.LDrawOrg; })[0];
+                if (ldrawOrgLine && (ldrawOrgLine.PartType === LdrawVisualizer.Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === LdrawVisualizer.Parser.Lines.LdrawOrgPartType.Unofficial_Part)) {
+                    // if we're starting a new part, push an empty object onto our list of part geometries
+                    // to keep track of this part's contents
+                    geometries.push({});
+                }
                 // Import all color definitions
                 ldrawFile.Lines.filter(function (l) {
                     return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.CommentOrMETA
@@ -62,10 +71,10 @@ var LdrawVisualizer;
                     geometry.faces.push(new THREE.Face3(2, 3, 0));
                     geometry.computeFaceNormals();
                     var quadColorCode = quadLine.Color == 16 ? colorCode : quadLine.Color;
-                    if (!(quadColorCode in geometries)) {
-                        geometries[quadColorCode] = [];
+                    if (!(quadColorCode in geometries[geometries.length - 1])) {
+                        geometries[geometries.length - 1][quadColorCode] = [];
                     }
-                    geometries[quadColorCode].push(geometry);
+                    geometries[geometries.length - 1][quadColorCode].push(geometry);
                 });
                 // Render all triangles
                 ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.Triangle; })
@@ -77,10 +86,10 @@ var LdrawVisualizer;
                     geometry.faces.push(new THREE.Face3(0, 1, 2));
                     geometry.computeFaceNormals();
                     var triColorCode = triLine.Color == 16 ? colorCode : triLine.Color;
-                    if (!(triColorCode in geometries)) {
-                        geometries[triColorCode] = [];
+                    if (!(triColorCode in geometries[geometries.length - 1])) {
+                        geometries[geometries.length - 1][triColorCode] = [];
                     }
-                    geometries[triColorCode].push(geometry);
+                    geometries[geometries.length - 1][triColorCode].push(geometry);
                 });
                 // Render all subfiles
                 ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.SubFileReference; })

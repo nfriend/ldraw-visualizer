@@ -44,6 +44,8 @@ module LdrawVisualizer.Parser.Lines {
 					console.log('Unknown ROTATION META tag subtype on line ' + lineNumber);
 					return null;
 				}
+			} else if (/!?LDRAW_ORG/.test(metaTag)) {
+				return LdrawOrgMETALine.Parse(line, splitLine, lineNumber);
 			} else {
 				//console.log('Unknown or unimplemented META tag on line ' + lineNumber + ': "' + metaTag + '"');
 				return null;

@@ -21,6 +21,7 @@ var LdrawVisualizer;
                 LdrawFileMETALineType[LdrawFileMETALineType["RotationCenter"] = 4] = "RotationCenter";
                 LdrawFileMETALineType[LdrawFileMETALineType["RotationConfig"] = 5] = "RotationConfig";
                 LdrawFileMETALineType[LdrawFileMETALineType["RotationStep"] = 6] = "RotationStep";
+                LdrawFileMETALineType[LdrawFileMETALineType["LDrawOrg"] = 7] = "LDrawOrg";
             })(Lines.LdrawFileMETALineType || (Lines.LdrawFileMETALineType = {}));
             var LdrawFileMETALineType = Lines.LdrawFileMETALineType;
         })(Lines = Parser.Lines || (Parser.Lines = {}));

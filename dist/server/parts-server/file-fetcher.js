@@ -59,7 +59,7 @@ var getSubfiles = function (rootFile, completedCallback) {
                             });
                         }
                         else {
-                            throw JSON.stringify({ isPartNotFoundError: true, message: 'Part not found: ' + filename });
+                            throw { isPartNotFoundError: true, message: 'Part not found: ' + filename };
                         }
                     });
                 }
