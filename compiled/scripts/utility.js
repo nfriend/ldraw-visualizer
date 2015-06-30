@@ -60,6 +60,14 @@ var LdrawVisualizer;
             return filePath.toLowerCase().replace(/\\/g, '/');
         }
         Utility.fixFilePath = fixFilePath;
+        function degreesToRadians(degrees) {
+            return degrees * (Math.PI / 180);
+        }
+        Utility.degreesToRadians = degreesToRadians;
+        function radiansToDegrees(radians) {
+            return radians * (180 / Math.PI);
+        }
+        Utility.radiansToDegrees = radiansToDegrees;
     })(Utility = LdrawVisualizer.Utility || (LdrawVisualizer.Utility = {}));
 })(LdrawVisualizer || (LdrawVisualizer = {}));
 //# sourceMappingURL=utility.js.map

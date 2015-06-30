@@ -17,12 +17,20 @@ module LdrawVisualizer.Renderer {
 	}
 
 	export class LdrawFileRenderer {
+		
+		// TEMPORARY to allow for stud logos
+		static scene: THREE.Scene;
 
 		// controls how large the seams are between each part.
 		// 1.0 = no seams, seems get larger as this number decreases
 		static seamWidthFactor = .993;
 
 		static Render(scene: THREE.Scene, ldconfig: LdrawFile, ldrawFiles: LdrawFile[]) {
+			
+			var startTime = Date.now();
+			
+			// TEMPORARY to allow for stud logos
+			this.scene = scene;
 			
 			// add the ldconfig file to the list of files to be rendered
 			ldrawFiles.unshift(ldconfig);
@@ -84,6 +92,8 @@ module LdrawVisualizer.Renderer {
 					}
 				});
 			});
+			
+			console.log('Creating three.js model and adding to scene took ' + (Date.now() - startTime) + 'ms');
 		}
 
 		private static render(ldrawFile: LdrawFile,
@@ -96,7 +106,7 @@ module LdrawVisualizer.Renderer {
 				&& typeof (<Parser.Lines.METALine>l).METALineType !== 'undefined'
 				&& (<Parser.Lines.METALine>l).METALineType === Parser.Lines.LdrawFileMETALineType.LDrawOrg)[0]
 
-			if (ldrawOrgLine 
+			if (ldrawOrgLine
 				&& (ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Unofficial_Part)
 				&& !hasAncestorPart) {
 					
@@ -186,8 +196,50 @@ module LdrawVisualizer.Renderer {
 					var subfileLine = <Parser.Lines.SubFileReferenceLine>l;
 					var useCurrentColor = subfileLine.Color === 16 || subfileLine.Color === 24
 					var newColorCode = useCurrentColor ? colorCode : subfileLine.Color;
-					LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
+
+					if (subfileLine.Filename === 'stud.dat') {
+						LdrawFileRenderer.renderStud(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
+					} else {
+						LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
+					}
 				});
+
+			return geometries;
+		}
+
+		// replace all studs with a higher-quality cylinder with a logo
+		private static renderStud(ldrawFile: LdrawFile,
+			colorCode: number = 0,
+			fullMatrix: THREE.Matrix4 = new THREE.Matrix4(),
+			geometries: Array<PartGeometries> = [{}],
+			hasAncestorPart: boolean = false): Array<PartGeometries> {
+
+			var currentGeometries = geometries[geometries.length - 1];
+
+			// 25 might be overkill, ratchet down in the future if it causes performance issues
+			var studGeometry = new THREE.CylinderGeometry(6, 6, 8, 25);
+			studGeometry.applyMatrix(fullMatrix);
+			studGeometry.computeFaceNormals();
+
+			// TEMPORARY way to add logos to studs
+			// does weird things with transparent blocks, ignore them for now
+			if (ColorLookup[colorCode] && !ColorLookup[colorCode].alpha) {
+				var logoGeometry = new THREE.PlaneBufferGeometry(12, 12);
+				logoGeometry.applyMatrix(new THREE.Matrix4().makeRotationX(Utility.degreesToRadians(90)));
+				logoGeometry.applyMatrix(new THREE.Matrix4().makeRotationY(Utility.degreesToRadians(270)));
+				logoGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -4, 0));
+				logoGeometry.applyMatrix(fullMatrix);
+				logoGeometry.computeFaceNormals();
+				logoGeometry.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+				var logoMaterial = new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture('../images/studlogo.png'), transparent: true });
+				this.scene.add(new THREE.Mesh(logoGeometry, logoMaterial));
+			}
+
+			if (!(colorCode in currentGeometries)) {
+				currentGeometries[colorCode] = [];
+			}
+
+			currentGeometries[colorCode].push(studGeometry);
 
 			return geometries;
 		}
