@@ -9,9 +9,12 @@ module LdrawVisualizer.Renderer {
 	// organized by color
 	interface PartGeometries {
 		[color: number]: THREE.Geometry[];
+		matrix?: THREE.Matrix4;
 	}
 
 	export class LdrawFileRenderer {
+
+		static seamWidthFactor = .993;
 
 		static Render(scene: THREE.Scene, ldconfig: LdrawFile, ldrawFiles: LdrawFile[]) {
 			console.log(ldrawFiles);
@@ -20,18 +23,33 @@ module LdrawVisualizer.Renderer {
 				var partGeometries: Array<PartGeometries> = this.render(ldrawFile);
 				partGeometries.forEach(geometries => {
 					for (var prop in geometries) {
-						if (geometries.hasOwnProperty(prop)) {
+						if (geometries.hasOwnProperty(prop) && prop != 'matrix') {
+							
+							// combine all similarly-colored geometries of this part into a single geometry
 							var combinedGeom = new THREE.Geometry();
 							geometries[prop].forEach(g => {
 								combinedGeom.merge(g, new THREE.Matrix4(), 0);
-							})
-							var color = typeof ColorLookup[prop] !== 'undefined' ? ColorLookup[prop] : { hex: 0, alpha: 255 };							
+							});
+
+							var translationVector = new THREE.Vector3();
+							if (geometries.matrix) {
+								geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
+								translationVector.multiplyScalar(-1);
+								combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+								combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(this.seamWidthFactor, this.seamWidthFactor, this.seamWidthFactor)));
+								translationVector.multiplyScalar(-1);
+								combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+							}
+
+							var color = typeof ColorLookup[prop] !== 'undefined' ? ColorLookup[prop] : { hex: 0, alpha: 255 };
 							var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
 							if (color.alpha) {
 								legoMaterial.transparent = true;
 								legoMaterial.opacity = color.alpha / 255;
 							}
 							combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+							combinedGeom.mergeVertices();
+							//combinedGeom.computeVertexNormals(true);
 							scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
 						}
 					}
@@ -42,16 +60,26 @@ module LdrawVisualizer.Renderer {
 		private static render(ldrawFile: LdrawFile,
 			colorCode: number = 0,
 			fullMatrix: THREE.Matrix4 = new THREE.Matrix4(),
-			geometries: Array<PartGeometries> = [{}]): Array<PartGeometries> {
+			geometries: Array<PartGeometries> = [{}],
+			hasAncestorPart: boolean = false): Array<PartGeometries> {
 
 			var ldrawOrgLine = <Parser.Lines.LdrawOrgMETALine>ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.CommentOrMETA
 				&& typeof (<Parser.Lines.METALine>l).METALineType !== 'undefined'
 				&& (<Parser.Lines.METALine>l).METALineType === Parser.Lines.LdrawFileMETALineType.LDrawOrg)[0]
 
-			if (ldrawOrgLine && (ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Unofficial_Part)) {
+			if (ldrawOrgLine 
+				&& (ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Unofficial_Part)
+				&& !hasAncestorPart) {
+					
 				// if we're starting a new part, push an empty object onto our list of part geometries
 				// to keep track of this part's contents
-				geometries.push({});
+				geometries.push({
+					matrix: fullMatrix
+				});
+				
+				// this flags future parts not to act as their own part, but rather as a subpart - 
+				// they've already been included as a subparent by an ancestor part
+				hasAncestorPart = true;
 			}
 				
 			// Import all color definitions
@@ -126,7 +154,7 @@ module LdrawVisualizer.Renderer {
 					var subfileLine = <Parser.Lines.SubFileReferenceLine>l;
 					var useCurrentColor = subfileLine.Color === 16 || subfileLine.Color === 24
 					var newColorCode = useCurrentColor ? colorCode : subfileLine.Color;
-					LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries);
+					LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
 				});
 
 			return geometries;

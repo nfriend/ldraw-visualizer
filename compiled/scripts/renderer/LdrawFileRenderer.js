@@ -17,11 +17,21 @@ var LdrawVisualizer;
                     var partGeometries = _this.render(ldrawFile);
                     partGeometries.forEach(function (geometries) {
                         for (var prop in geometries) {
-                            if (geometries.hasOwnProperty(prop)) {
+                            if (geometries.hasOwnProperty(prop) && prop != 'matrix') {
+                                // combine all similarly-colored geometries of this part into a single geometry
                                 var combinedGeom = new THREE.Geometry();
                                 geometries[prop].forEach(function (g) {
                                     combinedGeom.merge(g, new THREE.Matrix4(), 0);
                                 });
+                                var translationVector = new THREE.Vector3();
+                                if (geometries.matrix) {
+                                    geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
+                                    translationVector.multiplyScalar(-1);
+                                    combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+                                    combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(_this.seamWidthFactor, _this.seamWidthFactor, _this.seamWidthFactor)));
+                                    translationVector.multiplyScalar(-1);
+                                    combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+                                }
                                 var color = typeof Renderer.ColorLookup[prop] !== 'undefined' ? Renderer.ColorLookup[prop] : { hex: 0, alpha: 255 };
                                 var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
                                 if (color.alpha) {
@@ -29,23 +39,33 @@ var LdrawVisualizer;
                                     legoMaterial.opacity = color.alpha / 255;
                                 }
                                 combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+                                combinedGeom.mergeVertices();
+                                //combinedGeom.computeVertexNormals(true);
                                 scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
                             }
                         }
                     });
                 });
             };
-            LdrawFileRenderer.render = function (ldrawFile, colorCode, fullMatrix, geometries) {
+            LdrawFileRenderer.render = function (ldrawFile, colorCode, fullMatrix, geometries, hasAncestorPart) {
                 if (colorCode === void 0) { colorCode = 0; }
                 if (fullMatrix === void 0) { fullMatrix = new THREE.Matrix4(); }
                 if (geometries === void 0) { geometries = [{}]; }
+                if (hasAncestorPart === void 0) { hasAncestorPart = false; }
                 var ldrawOrgLine = ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.CommentOrMETA
                     && typeof l.METALineType !== 'undefined'
                     && l.METALineType === LdrawVisualizer.Parser.Lines.LdrawFileMETALineType.LDrawOrg; })[0];
-                if (ldrawOrgLine && (ldrawOrgLine.PartType === LdrawVisualizer.Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === LdrawVisualizer.Parser.Lines.LdrawOrgPartType.Unofficial_Part)) {
+                if (ldrawOrgLine
+                    && (ldrawOrgLine.PartType === LdrawVisualizer.Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === LdrawVisualizer.Parser.Lines.LdrawOrgPartType.Unofficial_Part)
+                    && !hasAncestorPart) {
                     // if we're starting a new part, push an empty object onto our list of part geometries
                     // to keep track of this part's contents
-                    geometries.push({});
+                    geometries.push({
+                        matrix: fullMatrix
+                    });
+                    // this flags future parts not to act as their own part, but rather as a subpart - 
+                    // they've already been included as a subparent by an ancestor part
+                    hasAncestorPart = true;
                 }
                 // Import all color definitions
                 ldrawFile.Lines.filter(function (l) {
@@ -97,7 +117,7 @@ var LdrawVisualizer;
                     var subfileLine = l;
                     var useCurrentColor = subfileLine.Color === 16 || subfileLine.Color === 24;
                     var newColorCode = useCurrentColor ? colorCode : subfileLine.Color;
-                    LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries);
+                    LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
                 });
                 return geometries;
             };
@@ -106,6 +126,7 @@ var LdrawVisualizer;
                 var newMatrix = new THREE.Matrix4().set(m[0][0], m[0][1], m[0][2], ref.Coordinates.X, m[1][0], m[1][1], m[1][2], ref.Coordinates.Y, m[2][0], m[2][1], m[2][2], ref.Coordinates.Z, 0, 0, 0, 1);
                 return newMatrix;
             };
+            LdrawFileRenderer.seamWidthFactor = .993;
             return LdrawFileRenderer;
         })();
         Renderer.LdrawFileRenderer = LdrawFileRenderer;

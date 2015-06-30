@@ -10,6 +10,7 @@ var LdrawVisualizer;
     var showAxes = false;
     var modelToGet = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : encodeURIComponent('CAR.DAT');
     var isDev = document.location.hostname === 'localhost' || document.location.hostname === '127.0.0.1';
+    // begin the scene with a model showing
     $.ajax({
         type: 'GET',
         url: './models/' + modelToGet,
@@ -17,10 +18,37 @@ var LdrawVisualizer;
             LdrawVisualizer.FileService.GetLdrawFile(modelFile, function (parsedFile, parsedLdconfig) {
                 ldrawFiles.push(parsedFile);
                 ldconfig = parsedLdconfig;
-                $('#loading').remove();
+                $('#loading').hide();
                 init();
                 render();
             }, isDev);
+        }
+    });
+    // temporary way of opening .dat or .ldr files
+    $(window).keydown(function (e) {
+        // CTRL + O (or CMD + O)
+        if (e.which === 79 && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            var fileInput = $('<input type="file" style="display: none">');
+            $('body').append(fileInput);
+            fileInput.click();
+            fileInput.change(function () {
+                $('#loading').show();
+                $('#container>*').remove();
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var contents = e.target.result;
+                    LdrawVisualizer.FileService.GetLdrawFile(contents, function (parsedFile, parsedLdconfig) {
+                        ldrawFiles = [parsedFile];
+                        ldconfig = parsedLdconfig;
+                        $('#loading').hide();
+                        init();
+                        render();
+                    }, isDev);
+                };
+                var file = fileInput[0].files[0];
+                reader.readAsText(file);
+            });
         }
     });
     function animate() {
