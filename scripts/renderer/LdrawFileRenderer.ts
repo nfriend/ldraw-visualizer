@@ -8,20 +8,35 @@ module LdrawVisualizer.Renderer {
 	// represents all geometries involved in rendering a single part,
 	// organized by color
 	interface PartGeometries {
+		
+		// a dictionary of color code -> Geometry array
 		[color: number]: THREE.Geometry[];
+		
+		// a transform matrix used to calculate seam widths for top-level parts
 		matrix?: THREE.Matrix4;
 	}
 
 	export class LdrawFileRenderer {
 
+		// controls how large the seams are between each part.
+		// 1.0 = no seams, seems get larger as this number decreases
 		static seamWidthFactor = .993;
 
 		static Render(scene: THREE.Scene, ldconfig: LdrawFile, ldrawFiles: LdrawFile[]) {
-			console.log(ldrawFiles);
+			
+			// add the ldconfig file to the list of files to be rendered
 			ldrawFiles.unshift(ldconfig);
+			
+			// render each file provided
 			ldrawFiles.forEach(ldrawFile => {
 				var partGeometries: Array<PartGeometries> = this.render(ldrawFile);
+				
+				// loop through all of the parts
 				partGeometries.forEach(geometries => {
+					
+					// for each part, loop through all of colors used in this part.
+					// similarly-colored geometries within a part as rendered as a unit for optimization purposes.
+					// prop is color code
 					for (var prop in geometries) {
 						if (geometries.hasOwnProperty(prop) && prop != 'matrix') {
 							
@@ -31,12 +46,21 @@ module LdrawVisualizer.Renderer {
 								combinedGeom.merge(g, new THREE.Matrix4(), 0);
 							});
 
+							// create seams
 							var translationVector = new THREE.Vector3();
 							if (geometries.matrix) {
+								// decompose this matrix into its translation, rotation, and scaling portions
 								geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
+								
+								// reverse the translation matrix and apply it to the combined geometries,
+								// bringing the part to the origin 
 								translationVector.multiplyScalar(-1);
 								combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+								
+								// make the part the tiniest bit smaller in order to create seams between the parts
 								combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(this.seamWidthFactor, this.seamWidthFactor, this.seamWidthFactor)));
+								
+								// move the part back to its original location
 								translationVector.multiplyScalar(-1);
 								combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
 							}
@@ -47,9 +71,14 @@ module LdrawVisualizer.Renderer {
 								legoMaterial.transparent = true;
 								legoMaterial.opacity = color.alpha / 255;
 							}
+							
+							// reverse the X and Y axes to match three.js's axis scheme
 							combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+							
+							// create smooth shading where possible
 							combinedGeom.mergeVertices();
 							//combinedGeom.computeVertexNormals(true);
+							
 							scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
 						}
 					}
@@ -71,7 +100,7 @@ module LdrawVisualizer.Renderer {
 				&& (ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Unofficial_Part)
 				&& !hasAncestorPart) {
 					
-				// if we're starting a new part, push an empty object onto our list of part geometries
+				// We're starting a new part, push an empty object onto our list of part geometries
 				// to keep track of this part's contents
 				geometries.push({
 					matrix: fullMatrix
@@ -81,6 +110,9 @@ module LdrawVisualizer.Renderer {
 				// they've already been included as a subparent by an ancestor part
 				hasAncestorPart = true;
 			}
+			
+			// the geometry array we'll be adding to through the rest of this process
+			var currentGeometries = geometries[geometries.length - 1];
 				
 			// Import all color definitions
 			ldrawFile.Lines.filter(l =>
@@ -116,11 +148,11 @@ module LdrawVisualizer.Renderer {
 					geometry.computeFaceNormals();
 
 					var quadColorCode = quadLine.Color == 16 ? colorCode : quadLine.Color;
-					if (!(quadColorCode in geometries[geometries.length - 1])) {
-						geometries[geometries.length - 1][quadColorCode] = [];
+					if (!(quadColorCode in currentGeometries)) {
+						currentGeometries[quadColorCode] = [];
 					}
 
-					geometries[geometries.length - 1][quadColorCode].push(geometry);
+					currentGeometries[quadColorCode].push(geometry);
 				});
 				
 			// Render all triangles
@@ -141,11 +173,11 @@ module LdrawVisualizer.Renderer {
 					geometry.computeFaceNormals();
 
 					var triColorCode = triLine.Color == 16 ? colorCode : triLine.Color;
-					if (!(triColorCode in geometries[geometries.length - 1])) {
-						geometries[geometries.length - 1][triColorCode] = [];
+					if (!(triColorCode in currentGeometries)) {
+						currentGeometries[triColorCode] = [];
 					}
 
-					geometries[geometries.length - 1][triColorCode].push(geometry);
+					currentGeometries[triColorCode].push(geometry);
 				});
 				
 			// Render all subfiles
@@ -160,6 +192,7 @@ module LdrawVisualizer.Renderer {
 			return geometries;
 		}
 
+		// extracts the transform matrix from the subfile reference line as a THREE.Matrix4
 		private static getMatrix4(ref: Parser.Lines.SubFileReferenceLine): THREE.Matrix4 {
 			var m = ref.TransformMatrix;
 			var newMatrix = new THREE.Matrix4().set(
