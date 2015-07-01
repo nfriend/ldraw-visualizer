@@ -166,7 +166,8 @@ var LdrawVisualizer;
                     logoGeometry.applyMatrix(fullMatrix);
                     logoGeometry.computeFaceNormals();
                     logoGeometry.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
-                    var logoMaterial = new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture('../images/studlogo.png'), transparent: true });
+                    var isDev = document.location.hostname === 'localhost' || document.location.hostname === '127.0.0.1';
+                    var logoMaterial = new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(isDev ? '../images/studlogo.png' : './images/studlogo.png'), transparent: true });
                     this.scene.add(new THREE.Mesh(logoGeometry, logoMaterial));
                 }
                 if (!(colorCode in currentGeometries)) {

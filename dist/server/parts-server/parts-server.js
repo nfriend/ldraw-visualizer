@@ -6,7 +6,7 @@ var bodyParser = require('body-parser');
 var fileFetcher = require('./file-fetcher');
 var domain = require('domain');
 var app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false, limit: 1048576 }));
 app.post('/', function (req, res) {
     var d = domain.create();
     var responseHasBeenSent = false;
