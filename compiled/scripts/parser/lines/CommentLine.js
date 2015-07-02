@@ -18,7 +18,7 @@ var LdrawVisualizer;
             var CommentLine = (function (_super) {
                 __extends(CommentLine, _super);
                 function CommentLine(lineContent) {
-                    _super.call(this, Lines.LdrawFileLineType.CommentOrMETA);
+                    _super.call(this, Lines.LdrawFileLineType.Comment);
                     this.LineContent = lineContent;
                 }
                 CommentLine.prototype.IsValid = function () {

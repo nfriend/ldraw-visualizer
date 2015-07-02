@@ -1,6 +1,5 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16,7 +15,7 @@ var LdrawVisualizer;
             var AuthorMETALine = (function (_super) {
                 __extends(AuthorMETALine, _super);
                 function AuthorMETALine(author) {
-                    _super.call(this, Lines.LdrawFileMETALineType.Author);
+                    _super.call(this, Lines.LdrawFileLineType.Author);
                     this.Author = author;
                 }
                 AuthorMETALine.prototype.IsValid = function () {
@@ -30,7 +29,7 @@ var LdrawVisualizer;
                     return authorLine;
                 };
                 return AuthorMETALine;
-            })(Lines.METALine);
+            })(Lines.LdrawFileLine);
             Lines.AuthorMETALine = AuthorMETALine;
         })(Lines = Parser.Lines || (Parser.Lines = {}));
     })(Parser = LdrawVisualizer.Parser || (LdrawVisualizer.Parser = {}));

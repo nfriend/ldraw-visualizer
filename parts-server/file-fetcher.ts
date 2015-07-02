@@ -5,7 +5,9 @@ var files: { [filename: string]: string } = {},
 	encoding = 'utf-8',
 	rootDirectory = __dirname + '/../../LDraw/',
 	partsDirectory = rootDirectory + 'parts/',
-	pDirectory = rootDirectory + 'p/';
+	pDirectory = rootDirectory + 'p/',
+	unofficialPartsDirectory = rootDirectory + 'Unofficial/parts/',
+	unofficialPDirectory = rootDirectory + 'Unofficial/p/';
 
 var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: string]: string }) => void) => {
 	
@@ -36,7 +38,7 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 
 	filenames.forEach((filename, i, arr) => {
 		filename = filename.toLowerCase().replace(/\\/g, '/');
-		
+
 		if (!(filename in files)) {
 			// if we haven't already fetched this file (or at least started the fetching process)
 
@@ -76,7 +78,55 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 								});
 							});
 						} else {
-							throw { isPartNotFoundError: true, message: 'Part not found: ' + filename };
+							// still no luck, let's check the unofficial parts directory
+							
+							fs.stat(unofficialPartsDirectory + filename, (err, stat) => {
+								if (err === null) {
+									// we found the file in the parts directory 
+					
+									fs.readFile(unofficialPartsDirectory + filename, encoding, (err, data) => {
+										files[filename] = data;
+						
+										// fetch this file's subfiles
+										getSubfiles(data, () => {
+											completedCount++;
+											if (completedCount === arr.length) {
+												completedCallback(files);
+											}
+										});
+									});
+								} else {
+									// last chance, let's check the unofficial p directory
+									
+									fs.stat(unofficialPDirectory + filename, (err, stat) => {
+										if (err === null) {
+											// we found the file in the parts directory 
+					
+											fs.readFile(unofficialPDirectory + filename, encoding, (err, data) => {
+												files[filename] = data;
+						
+												// fetch this file's subfiles
+												getSubfiles(data, () => {
+													completedCount++;
+													if (completedCount === arr.length) {
+														completedCallback(files);
+													}
+												});
+											});
+										} else {
+							
+											// we didn't find the part, let's ignore it,
+											// it might be part of a .mpd
+											files[filename] = '';
+
+											completedCount++;
+											if (completedCount === arr.length) {
+												completedCallback(files);
+											}
+										}
+									});
+								}
+							});
 						}
 					});
 				}
@@ -84,7 +134,7 @@ var getSubfiles = (rootFile: string, completedCallback: (allFiles: { [filename: 
 		} else {
 			// we've previously fetched this file (or are already in the process of fetching it).
 			// don't try and fetch it again.
-			
+		
 			completedCount++;
 			if (completedCount === arr.length) {
 				completedCallback(files);

@@ -1,6 +1,5 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16,7 +15,7 @@ var LdrawVisualizer;
             var RotationStepMETALine = (function (_super) {
                 __extends(RotationStepMETALine, _super);
                 function RotationStepMETALine(xAngle, yAngle, zAngle, rotationType) {
-                    _super.call(this, Lines.LdrawFileMETALineType.RotationStep);
+                    _super.call(this, Lines.LdrawFileLineType.RotationStep);
                     this.XAngle = xAngle;
                     this.YAngle = yAngle;
                     this.ZAngle = zAngle;
@@ -62,7 +61,7 @@ var LdrawVisualizer;
                     return rotStepLine;
                 };
                 return RotationStepMETALine;
-            })(Lines.METALine);
+            })(Lines.LdrawFileLine);
             Lines.RotationStepMETALine = RotationStepMETALine;
             (function (RotationType) {
                 RotationType[RotationType["Relative"] = 0] = "Relative";

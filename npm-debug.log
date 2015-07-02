@@ -1,0 +1,167 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files (x86)\\nodejs\\\\node.exe',
+1 verbose cli   'C:\\Program Files (x86)\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'version',
+1 verbose cli   'minor' ]
+2 info using npm@2.7.4
+3 info using node@v0.12.2
+4 verbose node symlink C:\Program Files (x86)\nodejs\\node.exe
+5 info git [ 'status', '--porcelain' ]
+6 verbose stack Error: Git working directory not clean.
+6 verbose stack M compiled/parts-server/file-fetcher.js
+6 verbose stack M compiled/parts-server/file-fetcher.js.map
+6 verbose stack M compiled/parts-server/parts-server.js
+6 verbose stack M compiled/parts-server/parts-server.js.map
+6 verbose stack M compiled/scripts/parser/FileParser.js
+6 verbose stack M compiled/scripts/parser/FileParser.js.map
+6 verbose stack M compiled/scripts/parser/FileService.js
+6 verbose stack M compiled/scripts/parser/FileService.js.map
+6 verbose stack M compiled/scripts/parser/lines/CommentLine.js
+6 verbose stack M compiled/scripts/parser/lines/CommentLine.js.map
+6 verbose stack M compiled/scripts/parser/lines/LineLine.js
+6 verbose stack M compiled/scripts/parser/lines/LineLine.js.map
+6 verbose stack M compiled/scripts/parser/lines/LineTypes.js
+6 verbose stack M compiled/scripts/parser/lines/LineTypes.js.map
+6 verbose stack M compiled/scripts/parser/lines/SubFileReferenceLine.js
+6 verbose stack M compiled/scripts/parser/lines/SubFileReferenceLine.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/AuthorMETALine.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/AuthorMETALine.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/ColourMETALine.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/ColourMETALine.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/LdrawOrgMETALine.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/LdrawOrgMETALine.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/NameMETALine.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/NameMETALine.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/PartDescription.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/PartDescription.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/RotationCenterMETALine.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/RotationCenterMETALine.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/RotationConfigMETALine.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/RotationConfigMETALine.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/RotationStepMETALine.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/RotationStepMETALine.js.map
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/StepMETALine.js
+6 verbose stack M compiled/scripts/parser/lines/meta-lines/StepMETALine.js.map
+6 verbose stack M compiled/scripts/renderer/LdrawFileRenderer.js
+6 verbose stack M compiled/scripts/renderer/LdrawFileRenderer.js.map
+6 verbose stack M compiled/scripts/utility.js
+6 verbose stack M compiled/scripts/utility.js.map
+6 verbose stack M dist/images/Thumbs.db
+6 verbose stack M dist/images/studlogo.png
+6 verbose stack M dist/index.html
+6 verbose stack M dist/ldraw-visualizer-0.1.0.min.js
+6 verbose stack M dist/server/parts-server/file-fetcher.js
+6 verbose stack M dist/server/parts-server/file-fetcher.js.map
+6 verbose stack M dist/server/parts-server/parts-server.js
+6 verbose stack M dist/server/parts-server/parts-server.js.map
+6 verbose stack M images/Thumbs.db
+6 verbose stack M images/studlogo.png
+6 verbose stack M index.html
+6 verbose stack M parts-server/file-fetcher.ts
+6 verbose stack M parts-server/parts-server.ts
+6 verbose stack M scripts/parser/FileParser.ts
+6 verbose stack M scripts/parser/FileService.ts
+6 verbose stack M scripts/parser/lines/CommentLine.ts
+6 verbose stack M scripts/parser/lines/LineLine.ts
+6 verbose stack M scripts/parser/lines/LineTypes.ts
+6 verbose stack M scripts/parser/lines/SubFileReferenceLine.ts
+6 verbose stack M scripts/parser/lines/meta-lines/AuthorMETALine.ts
+6 verbose stack M scripts/parser/lines/meta-lines/ColourMETALine.ts
+6 verbose stack M scripts/parser/lines/meta-lines/LdrawOrgMETALine.ts
+6 verbose stack D scripts/parser/lines/meta-lines/METALine.ts
+6 verbose stack M scripts/parser/lines/meta-lines/NameMETALine.ts
+6 verbose stack M scripts/parser/lines/meta-lines/PartDescription.ts
+6 verbose stack M scripts/parser/lines/meta-lines/RotationCenterMETALine.ts
+6 verbose stack M scripts/parser/lines/meta-lines/RotationConfigMETALine.ts
+6 verbose stack M scripts/parser/lines/meta-lines/RotationStepMETALine.ts
+6 verbose stack M scripts/parser/lines/meta-lines/StepMETALine.ts
+6 verbose stack D scripts/renderer/LdrawFileRenderer.js.map
+6 verbose stack M scripts/renderer/LdrawFileRenderer.ts
+6 verbose stack M scripts/utility.ts
+6 verbose stack     at C:\Program Files (x86)\nodejs\node_modules\npm\lib\version.js:138:37
+6 verbose stack     at C:\Program Files (x86)\nodejs\node_modules\npm\lib\utils\git.js:26:8
+6 verbose stack     at ChildProcess.exithandler (child_process.js:742:7)
+6 verbose stack     at ChildProcess.emit (events.js:110:17)
+6 verbose stack     at maybeClose (child_process.js:1015:16)
+6 verbose stack     at Socket.<anonymous> (child_process.js:1183:11)
+6 verbose stack     at Socket.emit (events.js:107:17)
+6 verbose stack     at Pipe.close (net.js:485:12)
+7 verbose cwd C:\Users\Nathan\Documents\GitHub\ldraw-visualizer
+8 error Windows_NT 6.3.9600
+9 error argv "C:\\Program Files (x86)\\nodejs\\\\node.exe" "C:\\Program Files (x86)\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "version" "minor"
+10 error node v0.12.2
+11 error npm  v2.7.4
+12 error Git working directory not clean.
+12 error M compiled/parts-server/file-fetcher.js
+12 error M compiled/parts-server/file-fetcher.js.map
+12 error M compiled/parts-server/parts-server.js
+12 error M compiled/parts-server/parts-server.js.map
+12 error M compiled/scripts/parser/FileParser.js
+12 error M compiled/scripts/parser/FileParser.js.map
+12 error M compiled/scripts/parser/FileService.js
+12 error M compiled/scripts/parser/FileService.js.map
+12 error M compiled/scripts/parser/lines/CommentLine.js
+12 error M compiled/scripts/parser/lines/CommentLine.js.map
+12 error M compiled/scripts/parser/lines/LineLine.js
+12 error M compiled/scripts/parser/lines/LineLine.js.map
+12 error M compiled/scripts/parser/lines/LineTypes.js
+12 error M compiled/scripts/parser/lines/LineTypes.js.map
+12 error M compiled/scripts/parser/lines/SubFileReferenceLine.js
+12 error M compiled/scripts/parser/lines/SubFileReferenceLine.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/AuthorMETALine.js
+12 error M compiled/scripts/parser/lines/meta-lines/AuthorMETALine.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/ColourMETALine.js
+12 error M compiled/scripts/parser/lines/meta-lines/ColourMETALine.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/LdrawOrgMETALine.js
+12 error M compiled/scripts/parser/lines/meta-lines/LdrawOrgMETALine.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/NameMETALine.js
+12 error M compiled/scripts/parser/lines/meta-lines/NameMETALine.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/PartDescription.js
+12 error M compiled/scripts/parser/lines/meta-lines/PartDescription.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/RotationCenterMETALine.js
+12 error M compiled/scripts/parser/lines/meta-lines/RotationCenterMETALine.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/RotationConfigMETALine.js
+12 error M compiled/scripts/parser/lines/meta-lines/RotationConfigMETALine.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/RotationStepMETALine.js
+12 error M compiled/scripts/parser/lines/meta-lines/RotationStepMETALine.js.map
+12 error M compiled/scripts/parser/lines/meta-lines/StepMETALine.js
+12 error M compiled/scripts/parser/lines/meta-lines/StepMETALine.js.map
+12 error M compiled/scripts/renderer/LdrawFileRenderer.js
+12 error M compiled/scripts/renderer/LdrawFileRenderer.js.map
+12 error M compiled/scripts/utility.js
+12 error M compiled/scripts/utility.js.map
+12 error M dist/images/Thumbs.db
+12 error M dist/images/studlogo.png
+12 error M dist/index.html
+12 error M dist/ldraw-visualizer-0.1.0.min.js
+12 error M dist/server/parts-server/file-fetcher.js
+12 error M dist/server/parts-server/file-fetcher.js.map
+12 error M dist/server/parts-server/parts-server.js
+12 error M dist/server/parts-server/parts-server.js.map
+12 error M images/Thumbs.db
+12 error M images/studlogo.png
+12 error M index.html
+12 error M parts-server/file-fetcher.ts
+12 error M parts-server/parts-server.ts
+12 error M scripts/parser/FileParser.ts
+12 error M scripts/parser/FileService.ts
+12 error M scripts/parser/lines/CommentLine.ts
+12 error M scripts/parser/lines/LineLine.ts
+12 error M scripts/parser/lines/LineTypes.ts
+12 error M scripts/parser/lines/SubFileReferenceLine.ts
+12 error M scripts/parser/lines/meta-lines/AuthorMETALine.ts
+12 error M scripts/parser/lines/meta-lines/ColourMETALine.ts
+12 error M scripts/parser/lines/meta-lines/LdrawOrgMETALine.ts
+12 error D scripts/parser/lines/meta-lines/METALine.ts
+12 error M scripts/parser/lines/meta-lines/NameMETALine.ts
+12 error M scripts/parser/lines/meta-lines/PartDescription.ts
+12 error M scripts/parser/lines/meta-lines/RotationCenterMETALine.ts
+12 error M scripts/parser/lines/meta-lines/RotationConfigMETALine.ts
+12 error M scripts/parser/lines/meta-lines/RotationStepMETALine.ts
+12 error M scripts/parser/lines/meta-lines/StepMETALine.ts
+12 error D scripts/renderer/LdrawFileRenderer.js.map
+12 error M scripts/renderer/LdrawFileRenderer.ts
+12 error M scripts/utility.ts
+13 error If you need help, you may report this error at:
+13 error     <https://github.com/npm/npm/issues>
+14 verbose exit [ 1, true ]

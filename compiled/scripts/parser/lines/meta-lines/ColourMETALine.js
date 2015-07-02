@@ -1,7 +1,6 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LdrawFileLine.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 /// <reference path="../../Color.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -18,7 +17,7 @@ var LdrawVisualizer;
             var ColourMETALine = (function (_super) {
                 __extends(ColourMETALine, _super);
                 function ColourMETALine(name, code, value, edge, alpha, luminance, texture) {
-                    _super.call(this, Lines.LdrawFileMETALineType.Colour);
+                    _super.call(this, Lines.LdrawFileLineType.Colour);
                     this.Name = name;
                     this.Code = code;
                     this.Value = value;
@@ -99,7 +98,7 @@ var LdrawVisualizer;
                     return colourLine;
                 };
                 return ColourMETALine;
-            })(Lines.METALine);
+            })(Lines.LdrawFileLine);
             Lines.ColourMETALine = ColourMETALine;
             (function (ColorTexture) {
                 ColorTexture[ColorTexture["Chrome"] = 0] = "Chrome";

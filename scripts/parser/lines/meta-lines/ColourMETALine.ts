@@ -1,15 +1,14 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LdrawFileLine.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 /// <reference path="../../Color.ts" />
 
 module LdrawVisualizer.Parser.Lines {
-	export class ColourMETALine extends METALine {
+	export class ColourMETALine extends LdrawFileLine {
 		constructor(name: string, code: number, value: Color, edge: number|Color, 
 			alpha: number, luminance: number, texture: ColorTexture) {
 				
-			super(LdrawFileMETALineType.Colour);
+			super(LdrawFileLineType.Colour);
 			
 			this.Name = name;
 			this.Code = code;

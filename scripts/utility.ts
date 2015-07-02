@@ -39,6 +39,10 @@ module LdrawVisualizer.Utility {
 	export function isNonEmpty(s: string) {
 		return !(/^\s+$/.test(s));
 	}
+	
+	export function isValidFilename(filename: string): boolean {
+		return /^[a-zA-Z0-9\-_\\/\.]+\.(dat|ldr|mpd)$/i.test(filename);
+	}
 
 	export function logMatrix(matrix: THREE.Matrix4) {
 		var e = matrix.elements;

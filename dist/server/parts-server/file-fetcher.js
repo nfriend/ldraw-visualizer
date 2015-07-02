@@ -1,6 +1,6 @@
 /// <reference path="../typings/references.ts" />
 var fs = require('fs');
-var files = {}, encoding = 'utf-8', rootDirectory = __dirname + '/../../LDraw/', partsDirectory = rootDirectory + 'parts/', pDirectory = rootDirectory + 'p/';
+var files = {}, encoding = 'utf-8', rootDirectory = __dirname + '/../../LDraw/', partsDirectory = rootDirectory + 'parts/', pDirectory = rootDirectory + 'p/', unofficialPartsDirectory = rootDirectory + 'Unofficial/parts/', unofficialPDirectory = rootDirectory + 'Unofficial/p/';
 var getSubfiles = function (rootFile, completedCallback) {
     // the file split into individual lines; 
     var lines = rootFile.split(/\r?\n/g);
@@ -59,7 +59,49 @@ var getSubfiles = function (rootFile, completedCallback) {
                             });
                         }
                         else {
-                            throw { isPartNotFoundError: true, message: 'Part not found: ' + filename };
+                            // still no luck, let's check the unofficial parts directory
+                            fs.stat(unofficialPartsDirectory + filename, function (err, stat) {
+                                if (err === null) {
+                                    // we found the file in the parts directory 
+                                    fs.readFile(unofficialPartsDirectory + filename, encoding, function (err, data) {
+                                        files[filename] = data;
+                                        // fetch this file's subfiles
+                                        getSubfiles(data, function () {
+                                            completedCount++;
+                                            if (completedCount === arr.length) {
+                                                completedCallback(files);
+                                            }
+                                        });
+                                    });
+                                }
+                                else {
+                                    // last chance, let's check the unofficial p directory
+                                    fs.stat(unofficialPDirectory + filename, function (err, stat) {
+                                        if (err === null) {
+                                            // we found the file in the parts directory 
+                                            fs.readFile(unofficialPDirectory + filename, encoding, function (err, data) {
+                                                files[filename] = data;
+                                                // fetch this file's subfiles
+                                                getSubfiles(data, function () {
+                                                    completedCount++;
+                                                    if (completedCount === arr.length) {
+                                                        completedCallback(files);
+                                                    }
+                                                });
+                                            });
+                                        }
+                                        else {
+                                            // we didn't find the part, let's ignore it,
+                                            // it might be part of a .mpd
+                                            files[filename] = '';
+                                            completedCount++;
+                                            if (completedCount === arr.length) {
+                                                completedCallback(files);
+                                            }
+                                        }
+                                    });
+                                }
+                            });
                         }
                     });
                 }

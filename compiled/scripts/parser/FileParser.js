@@ -9,7 +9,6 @@
 /// <reference path="./lines/QuadrilateralLine.ts" />
 /// <reference path="./lines/SubFileReferenceLine.ts" />
 /// <reference path="./lines/TriangleLine.ts" />
-/// <reference path="./lines/meta-lines/METALine.ts" />
 /// <reference path="./lines/meta-lines/AuthorMETALine.ts" />
 /// <reference path="./lines/meta-lines/ColourMETALine.ts" />
 /// <reference path="./lines/meta-lines/NameMETALine.ts" />
@@ -19,6 +18,8 @@
 /// <reference path="./lines/meta-lines/StepMETALine.ts" />
 /// <reference path="./lines/meta-lines/RotationStepMETALine.ts" />
 /// <reference path="./lines/meta-lines/LdrawOrgMETALine.ts" />
+/// <reference path="./lines/meta-lines/FileMETALine.ts" />
+/// <reference path="./lines/meta-lines/NoFileMETALine.ts" />
 var LdrawVisualizer;
 (function (LdrawVisualizer) {
     var Parser;
@@ -27,6 +28,7 @@ var LdrawVisualizer;
             function FileParser() {
             }
             FileParser.Parse = function (fileContent) {
+                var _this = this;
                 var partFile = new LdrawVisualizer.LdrawFile();
                 var lines = fileContent.split(/\r?\n/g);
                 lines.forEach(function (line, lineNumber) {
@@ -36,7 +38,7 @@ var LdrawVisualizer;
                             // Comment or META command
                             case '0':
                                 // first, try and parse as a META command
-                                var metaLine = Parser.Lines.METALine.Parse(line, splitLine, lineNumber);
+                                var metaLine = _this.TryParseMETACommand(line, splitLine, lineNumber);
                                 // if theabove returned null, we either have a comment field or an unimplemented META command
                                 if (!metaLine) {
                                     partFile.Lines.push(Parser.Lines.CommentLine.Parse(line, splitLine, lineNumber));
@@ -71,6 +73,58 @@ var LdrawVisualizer;
                     }
                 });
                 return partFile;
+            };
+            // attempts to parse the line as a META line.
+            // if no matching META declaration is found this function returns null
+            FileParser.TryParseMETACommand = function (line, splitLine, lineNumber) {
+                if (LdrawVisualizer.Utility.isNullOrUndefined(splitLine[1])) {
+                    return null;
+                }
+                var metaTag = splitLine[1].replace('!', '').toUpperCase().trim();
+                // test for a standard comment line
+                if (/^\/\//.test(metaTag)) {
+                    return null;
+                }
+                if (metaTag === 'COLOUR') {
+                    return Parser.Lines.ColourMETALine.Parse(line, splitLine, lineNumber);
+                }
+                else if (metaTag === 'STEP') {
+                    return Parser.Lines.StepMETALine.Parse(line, splitLine, lineNumber);
+                }
+                else if (metaTag === 'ROTSTEP') {
+                    return Parser.Lines.RotationStepMETALine.Parse(line, splitLine, lineNumber);
+                }
+                else if (/^Name:?$/i.test(metaTag)) {
+                    return Parser.Lines.NameMETALine.Parse(line, splitLine, lineNumber);
+                }
+                else if (/^Author:?$/i.test(metaTag)) {
+                    return Parser.Lines.AuthorMETALine.Parse(line, splitLine, lineNumber);
+                }
+                else if (metaTag === 'ROTATION') {
+                    if (splitLine[2] && splitLine[2].toUpperCase().trim() === 'CENTER') {
+                        return Parser.Lines.RotationCenterMETALine.Parse(line, splitLine, lineNumber);
+                    }
+                    else if (splitLine[2] && splitLine[2].toUpperCase().trim() === 'CONFIG') {
+                        return Parser.Lines.RotationConfigMETALine.Parse(line, splitLine, lineNumber);
+                    }
+                    else {
+                        console.log('Unknown ROTATION META tag subtype on line ' + lineNumber);
+                        return null;
+                    }
+                }
+                else if (/!?LDRAW_ORG/.test(metaTag)) {
+                    return Parser.Lines.LdrawOrgMETALine.Parse(line, splitLine, lineNumber);
+                }
+                else if (/!?FILE/.test(metaTag)) {
+                    return Parser.Lines.FileMETALine.Parse(line, splitLine, lineNumber);
+                }
+                else if (/!?NOFILE/.test(metaTag)) {
+                    return Parser.Lines.NoFileMETALine.Parse(line, splitLine, lineNumber);
+                }
+                else {
+                    //console.log('Unknown or unimplemented META tag on line ' + lineNumber + ': "' + metaTag + '"');
+                    return null;
+                }
             };
             return FileParser;
         })();

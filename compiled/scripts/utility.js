@@ -43,6 +43,10 @@ var LdrawVisualizer;
             return !(/^\s+$/.test(s));
         }
         Utility.isNonEmpty = isNonEmpty;
+        function isValidFilename(filename) {
+            return /^[a-zA-Z0-9\-_\\/\.]+\.(dat|ldr|mpd)$/i.test(filename);
+        }
+        Utility.isValidFilename = isValidFilename;
         function logMatrix(matrix) {
             var e = matrix.elements;
             console.log(e[0], e[4], e[8], e[12]);

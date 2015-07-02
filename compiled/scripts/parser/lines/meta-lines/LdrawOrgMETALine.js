@@ -1,7 +1,6 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LdrawFileLine.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -17,7 +16,7 @@ var LdrawVisualizer;
             var LdrawOrgMETALine = (function (_super) {
                 __extends(LdrawOrgMETALine, _super);
                 function LdrawOrgMETALine(partType) {
-                    _super.call(this, Lines.LdrawFileMETALineType.LDrawOrg);
+                    _super.call(this, Lines.LdrawFileLineType.LDrawOrg);
                     this.PartType = partType;
                 }
                 LdrawOrgMETALine.prototype.IsValid = function () {
@@ -61,8 +60,7 @@ var LdrawVisualizer;
                             loLine = new LdrawOrgMETALine(LdrawOrgPartType.Configuration);
                             break;
                         default:
-                            // console.log('Unknown !LDRAW_ORG part type: "' + partTypeString + '"');
-                            throw 'Unknown !LDRAW_ORG part type: "' + partTypeString + '"';
+                            loLine = new LdrawOrgMETALine(LdrawOrgPartType.Other);
                     }
                     if (!loLine.IsValid()) {
                         throw 'Unable to parse LDraw Org META line: Invalid line arguments on line ' + lineNumber;
@@ -70,7 +68,7 @@ var LdrawVisualizer;
                     return loLine;
                 };
                 return LdrawOrgMETALine;
-            })(Lines.METALine);
+            })(Lines.LdrawFileLine);
             Lines.LdrawOrgMETALine = LdrawOrgMETALine;
             (function (LdrawOrgPartType) {
                 LdrawOrgPartType[LdrawOrgPartType["Part"] = 0] = "Part";
@@ -84,6 +82,7 @@ var LdrawVisualizer;
                 LdrawOrgPartType[LdrawOrgPartType["Unofficial_Primitive_48"] = 8] = "Unofficial_Primitive_48";
                 LdrawOrgPartType[LdrawOrgPartType["Unofficial_Shortcut"] = 9] = "Unofficial_Shortcut";
                 LdrawOrgPartType[LdrawOrgPartType["Configuration"] = 10] = "Configuration";
+                LdrawOrgPartType[LdrawOrgPartType["Other"] = 11] = "Other";
             })(Lines.LdrawOrgPartType || (Lines.LdrawOrgPartType = {}));
             var LdrawOrgPartType = Lines.LdrawOrgPartType;
         })(Lines = Parser.Lines || (Parser.Lines = {}));

@@ -22,8 +22,8 @@ module LdrawVisualizer.Parser.Lines {
 		}
 		
 		static Parse(line: string, splitLine: string[], lineNumber: number): Lines.LineLine {
-			var point1Coords = new Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10)),
-				point2Coords = new Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10)),
+			var point1Coords = new Coordinates(parseFloat(splitLine[2]), parseFloat(splitLine[3]), parseFloat(splitLine[4])),
+				point2Coords = new Coordinates(parseFloat(splitLine[5]), parseFloat(splitLine[6]), parseFloat(splitLine[7])),
 				lineLine = new Lines.LineLine(parseInt(splitLine[1], 10), point1Coords, point2Coords);
 
 			if (!lineLine.IsValid()) {

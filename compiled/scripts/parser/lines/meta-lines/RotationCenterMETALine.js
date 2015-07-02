@@ -1,6 +1,5 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16,7 +15,7 @@ var LdrawVisualizer;
             var RotationCenterMETALine = (function (_super) {
                 __extends(RotationCenterMETALine, _super);
                 function RotationCenterMETALine(x, y, z, whatIsThisNumberFor, name) {
-                    _super.call(this, Lines.LdrawFileMETALineType.RotationCenter);
+                    _super.call(this, Lines.LdrawFileLineType.RotationCenter);
                     this.X = x;
                     this.Y = y;
                     this.Z = z;
@@ -38,7 +37,7 @@ var LdrawVisualizer;
                     return rotationCenterLine;
                 };
                 return RotationCenterMETALine;
-            })(Lines.METALine);
+            })(Lines.LdrawFileLine);
             Lines.RotationCenterMETALine = RotationCenterMETALine;
         })(Lines = Parser.Lines || (Parser.Lines = {}));
     })(Parser = LdrawVisualizer.Parser || (LdrawVisualizer.Parser = {}));

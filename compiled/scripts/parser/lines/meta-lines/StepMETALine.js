@@ -1,6 +1,5 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -16,7 +15,7 @@ var LdrawVisualizer;
             var StepMETALine = (function (_super) {
                 __extends(StepMETALine, _super);
                 function StepMETALine() {
-                    _super.call(this, Lines.LdrawFileMETALineType.Step);
+                    _super.call(this, Lines.LdrawFileLineType.Step);
                 }
                 StepMETALine.prototype.IsValid = function () {
                     return true;
@@ -25,7 +24,7 @@ var LdrawVisualizer;
                     return new StepMETALine();
                 };
                 return StepMETALine;
-            })(Lines.METALine);
+            })(Lines.LdrawFileLine);
             Lines.StepMETALine = StepMETALine;
         })(Lines = Parser.Lines || (Parser.Lines = {}));
     })(Parser = LdrawVisualizer.Parser || (LdrawVisualizer.Parser = {}));

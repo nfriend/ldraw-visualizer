@@ -1,11 +1,10 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 
 module LdrawVisualizer.Parser.Lines {
-	export class StepMETALine extends METALine {
+	export class StepMETALine extends LdrawFileLine {
 		constructor() {
-			super(LdrawFileMETALineType.Step);
+			super(LdrawFileLineType.Step);
 		}
 
 		IsValid(): boolean {

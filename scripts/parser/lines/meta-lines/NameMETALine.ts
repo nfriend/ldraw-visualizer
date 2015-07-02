@@ -1,11 +1,10 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 
 module LdrawVisualizer.Parser.Lines {
-	export class NameMETALine extends METALine {
+	export class NameMETALine extends LdrawFileLine {
 		constructor(name: string) {
-			super(LdrawFileMETALineType.Name);
+			super(LdrawFileLineType.Name);
 			
 			this.Name = name;
 		}

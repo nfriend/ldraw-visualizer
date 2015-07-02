@@ -7,7 +7,7 @@
 module LdrawVisualizer.Parser.Lines {
 	export class CommentLine extends LdrawFileLine {
 		constructor(lineContent: string) {
-			super(LdrawFileLineType.CommentOrMETA)
+			super(LdrawFileLineType.Comment)
 			
 			this.LineContent = lineContent;
 		} 

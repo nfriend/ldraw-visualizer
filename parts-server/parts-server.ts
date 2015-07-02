@@ -16,13 +16,8 @@ app.post('/', (req, res) => {
 	d.on('error', function(er) {
 		if (!responseHasBeenSent) {
 			responseHasBeenSent = true;
-			if (er.isPartNotFoundError) {
-				console.log(er.message);
-				res.status(500).send({ type: 'partNotFound', data: er.message });
-			} else {
-				console.log(er);
-				res.status(500).send({ type: 'unknown', data: er });
-			}
+			console.log(er);
+			res.status(500).send(er);
 		}
 	});
 	d.run(function() {

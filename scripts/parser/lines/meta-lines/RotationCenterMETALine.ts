@@ -1,11 +1,10 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 
 module LdrawVisualizer.Parser.Lines {
-	export class RotationCenterMETALine extends METALine {
+	export class RotationCenterMETALine extends LdrawFileLine {
 		constructor(x: number, y: number, z: number, whatIsThisNumberFor: number, name: string) {
-			super(LdrawFileMETALineType.RotationCenter);
+			super(LdrawFileLineType.RotationCenter);
 			
 			this.X = x;
 			this.Y = y;

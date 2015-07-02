@@ -26,7 +26,7 @@ module LdrawVisualizer.Renderer {
 		static seamWidthFactor = .993;
 
 		static Render(scene: THREE.Scene, ldconfig: LdrawFile, ldrawFiles: LdrawFile[]) {
-			
+
 			var startTime = Date.now();
 			
 			// TEMPORARY to allow for stud logos
@@ -92,7 +92,7 @@ module LdrawVisualizer.Renderer {
 					}
 				});
 			});
-			
+
 			console.log('Creating three.js model and adding to scene took ' + (Date.now() - startTime) + 'ms');
 		}
 
@@ -102,9 +102,7 @@ module LdrawVisualizer.Renderer {
 			geometries: Array<PartGeometries> = [{}],
 			hasAncestorPart: boolean = false): Array<PartGeometries> {
 
-			var ldrawOrgLine = <Parser.Lines.LdrawOrgMETALine>ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.CommentOrMETA
-				&& typeof (<Parser.Lines.METALine>l).METALineType !== 'undefined'
-				&& (<Parser.Lines.METALine>l).METALineType === Parser.Lines.LdrawFileMETALineType.LDrawOrg)[0]
+			var ldrawOrgLine = <Parser.Lines.LdrawOrgMETALine>ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.LDrawOrg)[0];
 
 			if (ldrawOrgLine
 				&& (ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Unofficial_Part)
@@ -125,10 +123,7 @@ module LdrawVisualizer.Renderer {
 			var currentGeometries = geometries[geometries.length - 1];
 				
 			// Import all color definitions
-			ldrawFile.Lines.filter(l =>
-				l.LineType === Parser.Lines.LdrawFileLineType.CommentOrMETA
-				&& typeof (<Parser.Lines.METALine>l).METALineType !== 'undefined'
-				&& (<Parser.Lines.METALine>l).METALineType === Parser.Lines.LdrawFileMETALineType.Colour)
+			ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.Colour)
 
 				.forEach(l => {
 					var colorLine = (<Parser.Lines.ColourMETALine>l);
@@ -217,26 +212,31 @@ module LdrawVisualizer.Renderer {
 			var currentGeometries = geometries[geometries.length - 1];
 
 			// 25 might be overkill, ratchet down in the future if it causes performance issues
-			var studGeometry = new THREE.CylinderGeometry(6, 6, 8, 25);
+			var studGeometry = new THREE.CylinderGeometry(6, 6, 8, 25, 1, false);
 			studGeometry.applyMatrix(fullMatrix);
 			studGeometry.computeFaceNormals();
 
 			// TEMPORARY way to add logos to studs
 			// does weird things with transparent blocks, ignore them for now
-			if (ColorLookup[colorCode] && !ColorLookup[colorCode].alpha) {
-				var logoGeometry = new THREE.PlaneBufferGeometry(12, 12);
-				logoGeometry.applyMatrix(new THREE.Matrix4().makeRotationX(Utility.degreesToRadians(90)));
-				logoGeometry.applyMatrix(new THREE.Matrix4().makeRotationY(Utility.degreesToRadians(270)));
-				logoGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -4, 0));
-				logoGeometry.applyMatrix(fullMatrix);
-				logoGeometry.computeFaceNormals();
-				logoGeometry.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
-				
-				var isDev = document.location.hostname === 'localhost' || document.location.hostname === '127.0.0.1';
-				
-				var logoMaterial = new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture(isDev ? '../images/studlogo.png' : './images/studlogo.png'), transparent: true });
-				this.scene.add(new THREE.Mesh(logoGeometry, logoMaterial));
-			}
+			// if (ColorLookup[colorCode] && !ColorLookup[colorCode].alpha) {
+			var logoGeometry = new THREE.CircleGeometry(6, 25);
+			logoGeometry.applyMatrix(new THREE.Matrix4().makeRotationX(Utility.degreesToRadians(90)));
+			logoGeometry.applyMatrix(new THREE.Matrix4().makeRotationY(Utility.degreesToRadians(270)));
+			logoGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -4, 0));
+			logoGeometry.applyMatrix(fullMatrix);
+			logoGeometry.computeFaceNormals();
+			logoGeometry.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+
+			var isDev = document.location.hostname === 'localhost' || document.location.hostname === '127.0.0.1';
+
+			var color = typeof ColorLookup[colorCode] !== 'undefined' ? ColorLookup[colorCode] : { hex: 0, alpha: 255 };
+			var logoMaterial = new THREE.MeshPhongMaterial({ normalMap: THREE.ImageUtils.loadTexture(isDev ? '../images/studlogo.png' : './images/studlogo.png'), color: color.hex, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
+			// if (color.alpha) {
+			// 	logoMaterial.transparent = true;
+			// 	logoMaterial.opacity = color.alpha / 255;
+			// }
+			this.scene.add(new THREE.Mesh(logoGeometry, logoMaterial));
+			// }
 
 			if (!(colorCode in currentGeometries)) {
 				currentGeometries[colorCode] = [];

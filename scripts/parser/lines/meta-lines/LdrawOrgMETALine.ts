@@ -1,12 +1,11 @@
 /// <reference path="../../../../typings/references.ts" />
 /// <reference path="../LdrawFileLine.ts" />
 /// <reference path="../LineTypes.ts" />
-/// <reference path="./METALine.ts" />
 
 module LdrawVisualizer.Parser.Lines {
-	export class LdrawOrgMETALine extends METALine {
+	export class LdrawOrgMETALine extends LdrawFileLine {
 		constructor(partType: LdrawOrgPartType) {
-			super(LdrawFileMETALineType.LDrawOrg);
+			super(LdrawFileLineType.LDrawOrg);
 
 			this.PartType = partType;
 		}
@@ -57,8 +56,7 @@ module LdrawVisualizer.Parser.Lines {
 					loLine = new LdrawOrgMETALine(LdrawOrgPartType.Configuration);
 					break;
 				default:
-					// console.log('Unknown !LDRAW_ORG part type: "' + partTypeString + '"');
-					throw 'Unknown !LDRAW_ORG part type: "' + partTypeString + '"';
+					loLine = new LdrawOrgMETALine(LdrawOrgPartType.Other);
 			}
 
 			if (!loLine.IsValid()) {
@@ -72,6 +70,6 @@ module LdrawVisualizer.Parser.Lines {
 	export enum LdrawOrgPartType {
 		Part, Subpart, Primitive, Primitive_48, Shortcut,
 		Unofficial_Part, Unofficial_Subpart, Unofficial_Primitive, Unofficial_Primitive_48, Unofficial_Shortcut,
-		Configuration
+		Configuration, Other
 	}
 }

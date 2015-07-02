@@ -27,7 +27,7 @@ var LdrawVisualizer;
                         && this.Point2.IsValid();
                 };
                 LineLine.Parse = function (line, splitLine, lineNumber) {
-                    var point1Coords = new Parser.Coordinates(parseInt(splitLine[2], 10), parseInt(splitLine[3], 10), parseInt(splitLine[4], 10)), point2Coords = new Parser.Coordinates(parseInt(splitLine[5], 10), parseInt(splitLine[6], 10), parseInt(splitLine[7], 10)), lineLine = new Lines.LineLine(parseInt(splitLine[1], 10), point1Coords, point2Coords);
+                    var point1Coords = new Parser.Coordinates(parseFloat(splitLine[2]), parseFloat(splitLine[3]), parseFloat(splitLine[4])), point2Coords = new Parser.Coordinates(parseFloat(splitLine[5]), parseFloat(splitLine[6]), parseFloat(splitLine[7])), lineLine = new Lines.LineLine(parseInt(splitLine[1], 10), point1Coords, point2Coords);
                     if (!lineLine.IsValid()) {
                         throw 'Unable to parse line line: Invalid line arguments on line ' + lineNumber;
                     }

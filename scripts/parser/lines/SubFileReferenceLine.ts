@@ -39,12 +39,10 @@ module LdrawVisualizer.Parser.Lines {
 				}
 			}
 
-			var fileNameIsValid = /^[a-zA-Z0-9\-_\\/]+\.(dat|ldr|mpd)$/i.test(this.Filename);
-
 			return (Utility.isValidColorCode(this.Color)
 				&& this.Coordinates.IsValid()
 				&& transformMatrixIsValid
-				&& fileNameIsValid);
+				&& Utility.hasAtLeastOneNonWhitespaceCharacter(this.Filename));
 		}
 		
 		static Parse(line: string, splitLine: string[], lineNumber: number): Lines.SubFileReferenceLine {
@@ -54,7 +52,7 @@ module LdrawVisualizer.Parser.Lines {
 					[parseFloat(splitLine[8]), parseFloat(splitLine[9]), parseFloat(splitLine[10])],
 					[parseFloat(splitLine[11]), parseFloat(splitLine[12]), parseFloat(splitLine[13])]
 				],
-				refLine = new Lines.SubFileReferenceLine(parseInt(splitLine[1], 10), coords, matrix, splitLine[14]);
+				refLine = new Lines.SubFileReferenceLine(parseInt(splitLine[1], 10), coords, matrix, line.substring(line.indexOf(splitLine[14])).trim());
 
 			if (!refLine.IsValid()) {
 				throw 'Unable to parse subfile reference line: Invalid line arguments on line ' + lineNumber;
