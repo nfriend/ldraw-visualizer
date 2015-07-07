@@ -1,0 +1,147 @@
+<html>
+	<head>
+		<title>LDraw Visualizer: Playground</title>
+		<link href="./styles/ldraw-visualizer.css" rel="stylesheet" type="text/css" />
+		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" class="dom_munger-ignore">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" class="dom_munger-ignore">
+		<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css' class="dom_munger-ignore">
+		<style>
+			html, body {
+				font-family: 'Roboto Condensed', sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container"></div>
+		<script class="dom_munger-ignore dom_munger-remove" src="//localhost:35729/livereload.js"></script>
+		<script src="lib/jquery/jquery-2.1.4.min.js"></script>
+		<script src="lib/threejs/three.min.js"></script>
+		<script src="lib/threejs/Detector.js"></script>
+		<script src="lib/threejs/OrbitControls.js"></script>
+		<script src="compiled/scripts/utility.js"></script>
+		<script>
+			if (!Detector.webgl) Detector.addGetWebGLMessage();
+									
+			var container;
+			var camera, controls, scene, renderer;
+			
+			window.onload = function() {
+				init();
+				render();	
+			}
+		
+			function animate() {
+				requestAnimationFrame(animate);
+				controls.update();
+			}
+		
+			function init() {
+				camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
+				camera.position.z = -500;
+		
+				controls = new THREE.OrbitControls(camera);
+				controls.damping = 0.2;
+				controls.addEventListener('change', render);
+		
+				scene = new THREE.Scene();
+				scene.fog = new THREE.FogExp2(0x111111, 0.001);
+		
+				scene.add(buildAxes(1000));
+				
+				var mainGeometry = new THREE.Geometry();
+				var sideCount = 8;
+				for (var i = 0; i < sideCount; i++) {
+					var side = new THREE.PlaneGeometry(41.5, 200);
+					side.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 50));
+					side.applyMatrix(new THREE.Matrix4().makeRotationY(LdrawVisualizer.Utility.degreesToRadians(360 * (i / sideCount))));
+					
+					THREE.GeometryUtils.merge(mainGeometry, side);
+				}
+				// real cylinder
+				//mainGeometry = new THREE.CylinderGeometry(50, 50, 200, 8, 1, true)
+				 
+				var material = new THREE.MeshPhongMaterial({ color: 0xffff00, shading: THREE.SmoothShading, shininess: 100, specular: 0x000000, side: THREE.DoubleSide });
+				var cylinder = new THREE.Mesh( mainGeometry, material ); 
+				scene.add(cylinder);
+		
+				// lights
+				var directionalLight = new THREE.DirectionalLight(0xCCCCCC);
+				directionalLight.position.set(1, .6, -.2);
+				scene.add(directionalLight);
+		
+				directionalLight = new THREE.DirectionalLight(0xCCCCCC);
+				directionalLight.position.set(-1, -1.5, 1.7);
+				scene.add(directionalLight);
+		
+				directionalLight = new THREE.DirectionalLight(0xFFFFFF);
+				directionalLight.position.set(-20, 70, -60);
+				scene.add(directionalLight);
+		
+				var ambientLight = new THREE.AmbientLight(0x333333);
+				scene.add(ambientLight);
+				
+				// renderer
+				renderer = new THREE.WebGLRenderer({ antialias: true });
+				renderer.setClearColor(scene.fog.color);
+				renderer.setPixelRatio(window.devicePixelRatio);
+				renderer.setSize(window.innerWidth, window.innerHeight);
+		
+				container = document.getElementById('container');
+				container.appendChild(renderer.domElement);
+		
+				window.addEventListener('resize', onWindowResize, false);
+		
+				animate();
+			}
+		
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+		
+				renderer.setSize(window.innerWidth, window.innerHeight);
+		
+				render();
+			}
+		
+			function render() {
+				renderer.render(scene, camera);
+			}
+			
+			function buildAxes(length) {
+		        var axes = new THREE.Object3D();
+		
+		        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(length, 0, 0), 0xFF0000, false)); // +X
+		        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(-length, 0, 0), 0xFF0000, true)); // -X
+		        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, length, 0), 0x00FF00, false)); // +Y
+		        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -length, 0), 0x00FF00, true)); // -Y
+		        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, length), 0x0000FF, false)); // +Z
+		        axes.add(buildAxis(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -length), 0x0000FF, true)); // -Z
+		
+		        return axes;
+		
+			}
+		
+			function buildAxis(src, dst, colorHex, dashed) {
+		        var geom = new THREE.Geometry(),
+		            mat;
+		
+		        if (dashed) {
+					mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 3, gapSize: 3 });
+		        } else {
+					mat = new THREE.LineBasicMaterial({ linewidth: 3, color: colorHex });
+		        }
+		
+		        geom.vertices.push(src.clone());
+		        geom.vertices.push(dst.clone());
+		        geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
+		
+		        var axis = new THREE.Line(geom, mat, THREE.LinePieces);
+		
+		        return axis;
+		
+			}
+		
+		</script>
+	</body>
+
+</html>

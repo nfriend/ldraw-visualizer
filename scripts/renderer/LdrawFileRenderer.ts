@@ -74,7 +74,7 @@ module LdrawVisualizer.Renderer {
 							}
 
 							var color = typeof ColorLookup[prop] !== 'undefined' ? ColorLookup[prop] : { hex: 0, alpha: 255 };
-							var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 30, side: THREE.DoubleSide });
+							var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 100, specular: 0x000000, side: THREE.DoubleSide });
 							if (color.alpha) {
 								legoMaterial.transparent = true;
 								legoMaterial.opacity = color.alpha / 255;

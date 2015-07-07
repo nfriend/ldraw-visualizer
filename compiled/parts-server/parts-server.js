@@ -18,7 +18,9 @@ app.post('/', function (req, res) {
         }
     });
     d.run(function () {
+        var start = Date.now();
         fileFetcher.fetchFiles(req.body.file, function (allFiles) {
+            console.log('request took ' + (Date.now() - start) + ' ms to complete');
             res.status(200).send(allFiles);
         });
     });
