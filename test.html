@@ -48,23 +48,38 @@
 		
 				scene.add(buildAxes(1000));
 				
+				// var pointGeometry = new THREE.SphereGeometry( 2, 32, 32 );
+				// pointGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(41.421356 / 2, 0, -50));
+				// var pointMaterial = new THREE.MeshPhongMaterial( {color: 0x00aa00} );
+				// var point = new THREE.Mesh( pointGeometry, pointMaterial );
+				// scene.add(point);
+				
 				var mainGeometry = new THREE.Geometry();
 				var sideCount = 8;
 				for (var i = 0; i < sideCount; i++) {
-					var side = new THREE.PlaneGeometry(41.42135623730950488016887242096980785696718753769480731766797, 200);
+					var width = 41.42135623730950488016887242096980785696718753769480731766797;
+					var side = new THREE.PlaneGeometry(width, 200);
+					side.faces[0].vertexNormals[0] = new THREE.Vector3(-width / 2, 0, 50);
+					side.faces[0].vertexNormals[1] = new THREE.Vector3(-width / 2, 0, 50);
+					side.faces[0].vertexNormals[2] = new THREE.Vector3(width / 2, 0, 50);
+					
+					side.faces[1].vertexNormals[0] = new THREE.Vector3(-width / 2, 0, 50);
+					side.faces[1].vertexNormals[1] = new THREE.Vector3(width / 2, 0, 50);
+					side.faces[1].vertexNormals[2] = new THREE.Vector3(width / 2, 0, 50);
+					
+					
 					side.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 50));
 					side.applyMatrix(new THREE.Matrix4().makeRotationY(LdrawVisualizer.Utility.degreesToRadians(360 * (i / sideCount))));
 					
 					THREE.GeometryUtils.merge(mainGeometry, side);
 				}
 				
-				mainGeometry.mergeVertices();
-				mainGeometry.computeVertexNormals();
+				// mainGeometry.mergeVertices();
 				
 				// real cylinder
-				//mainGeometry = new THREE.CylinderGeometry(50, 50, 200, 8, 1, true)
+				mainGeometry = new THREE.CylinderGeometry(50, 50, 200, 8, 1, true)
 				 
-				var material = new THREE.MeshLambertMaterial({ color: 0xffff00, shading: THREE.SmoothShading, shininess: 100, specular: 0x000000, side: THREE.DoubleSide });
+				var material = new THREE.MeshPhongMaterial({ color: 0xffff00, shading: THREE.SmoothShading, side: THREE.DoubleSide });
 				var cylinder = new THREE.Mesh( mainGeometry, material ); 
 				scene.add(cylinder);
 		
