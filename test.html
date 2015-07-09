@@ -74,7 +74,9 @@
 					THREE.GeometryUtils.merge(mainGeometry, side);
 				}
 				
-				// mainGeometry.mergeVertices();
+				console.log(mainGeometry.vertices.length);
+				mainGeometry.mergeVertices();
+				console.log(mainGeometry.vertices.length);
 				
 				// real cylinder
 				mainGeometry = new THREE.CylinderGeometry(50, 50, 200, 8, 1, true)

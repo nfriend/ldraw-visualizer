@@ -2,6 +2,7 @@
 /// <reference path="../parser/LdrawFile.ts" />
 /// <reference path="../parser/lines/LineTypes.ts" />
 /// <reference path="./ColorLookup.ts" />
+/// <reference path="./EdgeMap.ts" />
 
 module LdrawVisualizer.Renderer {
 	
@@ -14,6 +15,16 @@ module LdrawVisualizer.Renderer {
 		
 		// a transform matrix used to calculate seam widths for top-level parts
 		matrix?: THREE.Matrix4;
+	}
+	
+	// represents all information need to render a single part
+	interface PartRenderingInfo {
+		partGeometries: Array<PartGeometries>;
+		edgeMap: EdgeMap;
+		conditionalLines: Array<{
+			vertex1: THREE.Vector3,
+			vertex2: THREE.Vector3
+		}>;
 	}
 
 	export class LdrawFileRenderer {
@@ -56,7 +67,8 @@ module LdrawVisualizer.Renderer {
 
 							// create seams
 							var translationVector = new THREE.Vector3();
-							if (geometries.matrix) {
+							// if (geometries.matrix) {
+								
 								// decompose this matrix into its translation, rotation, and scaling portions
 								geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
 								
@@ -71,7 +83,7 @@ module LdrawVisualizer.Renderer {
 								// move the part back to its original location
 								translationVector.multiplyScalar(-1);
 								combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
-							}
+							// }
 
 							var color = typeof ColorLookup[prop] !== 'undefined' ? ColorLookup[prop] : { hex: 0, alpha: 255 };
 							var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 100, specular: 0x000000, side: THREE.DoubleSide });
@@ -85,6 +97,7 @@ module LdrawVisualizer.Renderer {
 							
 							// create smooth shading where possible
 							combinedGeom.mergeVertices();
+							
 							//combinedGeom.computeVertexNormals(true);
 							
 							scene.add(new THREE.Mesh(combinedGeom, legoMaterial));

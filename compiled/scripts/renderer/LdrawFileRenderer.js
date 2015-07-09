@@ -2,6 +2,7 @@
 /// <reference path="../parser/LdrawFile.ts" />
 /// <reference path="../parser/lines/LineTypes.ts" />
 /// <reference path="./ColorLookup.ts" />
+/// <reference path="./EdgeMap.ts" />
 var LdrawVisualizer;
 (function (LdrawVisualizer) {
     var Renderer;
@@ -33,19 +34,19 @@ var LdrawVisualizer;
                                 });
                                 // create seams
                                 var translationVector = new THREE.Vector3();
-                                if (geometries.matrix) {
-                                    // decompose this matrix into its translation, rotation, and scaling portions
-                                    geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
-                                    // reverse the translation matrix and apply it to the combined geometries,
-                                    // bringing the part to the origin 
-                                    translationVector.multiplyScalar(-1);
-                                    combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
-                                    // make the part the tiniest bit smaller in order to create seams between the parts
-                                    combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(_this.seamWidthFactor, _this.seamWidthFactor, _this.seamWidthFactor)));
-                                    // move the part back to its original location
-                                    translationVector.multiplyScalar(-1);
-                                    combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
-                                }
+                                // if (geometries.matrix) {
+                                // decompose this matrix into its translation, rotation, and scaling portions
+                                geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
+                                // reverse the translation matrix and apply it to the combined geometries,
+                                // bringing the part to the origin 
+                                translationVector.multiplyScalar(-1);
+                                combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+                                // make the part the tiniest bit smaller in order to create seams between the parts
+                                combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(_this.seamWidthFactor, _this.seamWidthFactor, _this.seamWidthFactor)));
+                                // move the part back to its original location
+                                translationVector.multiplyScalar(-1);
+                                combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+                                // }
                                 var color = typeof Renderer.ColorLookup[prop] !== 'undefined' ? Renderer.ColorLookup[prop] : { hex: 0, alpha: 255 };
                                 var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 100, specular: 0x000000, side: THREE.DoubleSide });
                                 if (color.alpha) {
