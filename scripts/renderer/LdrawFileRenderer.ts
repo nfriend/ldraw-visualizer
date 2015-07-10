@@ -20,8 +20,7 @@ module LdrawVisualizer.Renderer {
 	// represents all information need to render a single part
 	interface PartRenderingInfo {
 		partGeometries: Array<PartGeometries>;
-		edgeMap: EdgeMap;
-		conditionalLines: Array<{
+		optionalLines: Array<{
 			vertex1: THREE.Vector3,
 			vertex2: THREE.Vector3
 		}>;
@@ -34,7 +33,7 @@ module LdrawVisualizer.Renderer {
 
 		// controls how large the seams are between each part.
 		// 1.0 = no seams, seems get larger as this number decreases
-		static seamWidthFactor = .993;
+		static seamWidthFactor = 1; //.993;
 
 		static Render(scene: THREE.Scene, ldconfig: LdrawFile, ldrawFiles: LdrawFile[]) {
 
@@ -48,10 +47,10 @@ module LdrawVisualizer.Renderer {
 			
 			// render each file provided
 			ldrawFiles.forEach(ldrawFile => {
-				var partGeometries: Array<PartGeometries> = this.render(ldrawFile);
+				var partInfo: PartRenderingInfo = this.render(ldrawFile);
 				
 				// loop through all of the parts
-				partGeometries.forEach(geometries => {
+				partInfo.partGeometries.forEach(geometries => {
 					
 					// for each part, loop through all of colors used in this part.
 					// similarly-colored geometries within a part as rendered as a unit for optimization purposes.
@@ -69,20 +68,20 @@ module LdrawVisualizer.Renderer {
 							var translationVector = new THREE.Vector3();
 							// if (geometries.matrix) {
 								
-								// decompose this matrix into its translation, rotation, and scaling portions
-								geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
+							// decompose this matrix into its translation, rotation, and scaling portions
+							geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
 								
-								// reverse the translation matrix and apply it to the combined geometries,
-								// bringing the part to the origin 
-								translationVector.multiplyScalar(-1);
-								combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+							// reverse the translation matrix and apply it to the combined geometries,
+							// bringing the part to the origin 
+							translationVector.multiplyScalar(-1);
+							combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
 								
-								// make the part the tiniest bit smaller in order to create seams between the parts
-								combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(this.seamWidthFactor, this.seamWidthFactor, this.seamWidthFactor)));
+							// make the part the tiniest bit smaller in order to create seams between the parts
+							combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(this.seamWidthFactor, this.seamWidthFactor, this.seamWidthFactor)));
 								
-								// move the part back to its original location
-								translationVector.multiplyScalar(-1);
-								combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
+							// move the part back to its original location
+							translationVector.multiplyScalar(-1);
+							combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
 							// }
 
 							var color = typeof ColorLookup[prop] !== 'undefined' ? ColorLookup[prop] : { hex: 0, alpha: 255 };
@@ -91,15 +90,70 @@ module LdrawVisualizer.Renderer {
 								legoMaterial.transparent = true;
 								legoMaterial.opacity = color.alpha / 255;
 							}
+
+							var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
 							
 							// reverse the X and Y axes to match three.js's axis scheme
-							combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
+							combinedGeom.applyMatrix(scaleMatrix);
 							
-							// create smooth shading where possible
+							// create smooth shading where possible, based on faces that share edges and have an optional line defined on that edge
 							combinedGeom.mergeVertices();
-							
-							//combinedGeom.computeVertexNormals(true);
-							
+							combinedGeom.computeFaceNormals();
+
+							var edgeMap = new EdgeMap();
+							edgeMap.addGeometry(combinedGeom);
+
+							partInfo.optionalLines.forEach(optLine => {
+								var adjacentFaces = edgeMap.getFaces(optLine.vertex1.clone().applyMatrix4(scaleMatrix), optLine.vertex2.clone().applyMatrix4(scaleMatrix));
+								if (adjacentFaces) {
+									console.log('adjacent face');
+									var newNormal = adjacentFaces.face1.normal.add(adjacentFaces.face2.normal).normalize();
+
+									switch (adjacentFaces.face1SharedEdge) {
+										case Face3Edge.AB:
+											adjacentFaces.face1.vertexNormals[0] = newNormal;
+											adjacentFaces.face1.vertexNormals[1] = newNormal;
+											adjacentFaces.face1.vertexNormals[2] = adjacentFaces.face1.normal;
+											break;
+										case Face3Edge.BC:
+											adjacentFaces.face1.vertexNormals[0] = adjacentFaces.face1.normal;
+											adjacentFaces.face1.vertexNormals[1] = newNormal;
+											adjacentFaces.face1.vertexNormals[2] = newNormal;
+											break;
+										case Face3Edge.CA:
+											adjacentFaces.face1.vertexNormals[0] = newNormal;
+											adjacentFaces.face1.vertexNormals[1] = adjacentFaces.face1.normal;
+											adjacentFaces.face1.vertexNormals[2] = newNormal;
+											break;
+									}
+
+									switch (adjacentFaces.face2SharedEdge) {
+										case Face3Edge.AB:
+											adjacentFaces.face2.vertexNormals[0] = newNormal;
+											adjacentFaces.face2.vertexNormals[1] = newNormal;
+											adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
+											break;
+										case Face3Edge.BC:
+											adjacentFaces.face2.vertexNormals[0] = adjacentFaces.face2.normal;
+											adjacentFaces.face2.vertexNormals[1] = newNormal;
+											adjacentFaces.face2.vertexNormals[2] = newNormal;
+											break;
+										case Face3Edge.CA:
+											adjacentFaces.face2.vertexNormals[0] = newNormal;
+											adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
+											adjacentFaces.face2.vertexNormals[2] = newNormal;
+											break;
+									}
+								}
+
+								// var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+								// var lineGeometry = new THREE.Geometry();
+								// lineGeometry.vertices.push(optLine.vertex1.clone().applyMatrix4(scaleMatrix));
+								// lineGeometry.vertices.push(optLine.vertex2.clone().applyMatrix4(scaleMatrix))
+								// var line = new THREE.Line(lineGeometry, lineMaterial);
+								// scene.add(line);
+							});
+
 							scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
 						}
 					}
@@ -112,18 +166,19 @@ module LdrawVisualizer.Renderer {
 		private static render(ldrawFile: LdrawFile,
 			colorCode: number = 0,
 			fullMatrix: THREE.Matrix4 = new THREE.Matrix4(),
-			geometries: Array<PartGeometries> = [{}],
-			hasAncestorPart: boolean = false): Array<PartGeometries> {
+			partRenderingInfo: PartRenderingInfo = { optionalLines: [], partGeometries: [] },
+			hasAncestorPart: boolean = false): PartRenderingInfo {
 
 			var ldrawOrgLine = <Parser.Lines.LdrawOrgMETALine>ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.LDrawOrg)[0];
 
-			if (ldrawOrgLine
+			if ((ldrawOrgLine
 				&& (ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === Parser.Lines.LdrawOrgPartType.Unofficial_Part)
-				&& !hasAncestorPart) {
+				&& !hasAncestorPart)
+				|| partRenderingInfo.partGeometries.length === 0) {
 					
 				// We're starting a new part, push an empty object onto our list of part geometries
 				// to keep track of this part's contents
-				geometries.push({
+				partRenderingInfo.partGeometries.push({
 					matrix: fullMatrix
 				});
 				
@@ -133,7 +188,7 @@ module LdrawVisualizer.Renderer {
 			}
 			
 			// the geometry array we'll be adding to through the rest of this process
-			var currentGeometries = geometries[geometries.length - 1];
+			var currentGeometries = partRenderingInfo.partGeometries[partRenderingInfo.partGeometries.length - 1];
 				
 			// Import all color definitions
 			ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.Colour)
@@ -198,6 +253,22 @@ module LdrawVisualizer.Renderer {
 					currentGeometries[triColorCode].push(geometry);
 				});
 				
+			// add all optional lines to our PartRenderingInfo object
+			ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.OptionalLine)
+				.forEach(l => {
+					var optLine = <Parser.Lines.OptionalLineLine>l;
+					var point1 = new THREE.Vector3(optLine.Point1.X, optLine.Point1.Y, optLine.Point1.Z);
+					var point2 = new THREE.Vector3(optLine.Point2.X, optLine.Point2.Y, optLine.Point2.Z);
+
+					point1.applyMatrix4(fullMatrix);
+					point2.applyMatrix4(fullMatrix);
+
+					partRenderingInfo.optionalLines.push({
+						vertex1: point1,
+						vertex2: point2
+					});
+				});
+				
 			// Render all subfiles
 			ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.SubFileReference)
 				.forEach(l => {
@@ -206,23 +277,23 @@ module LdrawVisualizer.Renderer {
 					var newColorCode = useCurrentColor ? colorCode : subfileLine.Color;
 
 					if (subfileLine.Filename === 'stud.dat') {
-						LdrawFileRenderer.renderStud(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
+						LdrawFileRenderer.renderStud(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), partRenderingInfo, hasAncestorPart);
 					} else {
-						LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
+						LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), partRenderingInfo, hasAncestorPart);
 					}
 				});
 
-			return geometries;
+			return partRenderingInfo;
 		}
 
 		// replace all studs with a higher-quality cylinder with a logo
 		private static renderStud(ldrawFile: LdrawFile,
 			colorCode: number = 0,
 			fullMatrix: THREE.Matrix4 = new THREE.Matrix4(),
-			geometries: Array<PartGeometries> = [{}],
-			hasAncestorPart: boolean = false): Array<PartGeometries> {
+			partRenderingInfo: PartRenderingInfo = { optionalLines: [], partGeometries: [] },
+			hasAncestorPart: boolean = false): PartRenderingInfo {
 
-			var currentGeometries = geometries[geometries.length - 1];
+			var currentGeometries = partRenderingInfo.partGeometries[partRenderingInfo.partGeometries.length - 1];
 
 			// 25 might be overkill, ratchet down in the future if it causes performance issues
 			var studGeometry = new THREE.CylinderGeometry(6, 6, 8, 25, 1, false);
@@ -257,7 +328,7 @@ module LdrawVisualizer.Renderer {
 
 			currentGeometries[colorCode].push(studGeometry);
 
-			return geometries;
+			return partRenderingInfo;
 		}
 
 		// extracts the transform matrix from the subfile reference line as a THREE.Matrix4

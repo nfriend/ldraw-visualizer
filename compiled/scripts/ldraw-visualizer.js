@@ -8,8 +8,8 @@ var LdrawVisualizer;
     var container;
     var camera, controls, scene, renderer, ldrawFiles = [], ldconfig;
     var showAxes = false;
-    var modelToGet = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : encodeURIComponent('31018.mpd');
     var isDev = document.location.hostname === 'localhost' || document.location.hostname === '127.0.0.1';
+    var modelToGet = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : encodeURIComponent(isDev ? 'test.ldr' : '31018.mpd');
     // begin the scene with a model showing
     $.ajax({
         type: 'GET',

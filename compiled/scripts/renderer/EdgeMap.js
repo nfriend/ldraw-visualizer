@@ -3,38 +3,58 @@ var LdrawVisualizer;
 (function (LdrawVisualizer) {
     var Renderer;
     (function (Renderer) {
+        (function (Face3Edge) {
+            Face3Edge[Face3Edge["AB"] = 0] = "AB";
+            Face3Edge[Face3Edge["BC"] = 1] = "BC";
+            Face3Edge[Face3Edge["CA"] = 2] = "CA";
+        })(Renderer.Face3Edge || (Renderer.Face3Edge = {}));
+        var Face3Edge = Renderer.Face3Edge;
         var EdgeMap = (function () {
             function EdgeMap() {
                 // how close the vertices must be to be considered the same point
-                this.epsilon = 0.0001;
+                this.precision = 10000;
                 // a map of edge keys to faces.
                 this.map = {};
+                this.once = true;
             }
             // adds all of the faces in the geometry to the map, indexed by their edges.
             // note each face will appear in the internal map 3 times, once for each of its edges
             EdgeMap.prototype.addGeometry = function (geometry) {
                 var _this = this;
                 geometry.faces.forEach(function (f) {
-                    var edge1MapKey = _this.getMapKey(geometry.vertices[f.a], geometry.vertices[f.b]);
-                    if (!_this.map[edge1MapKey]) {
-                        _this.map[edge1MapKey] = [];
-                    }
-                    _this.map[edge1MapKey].push(f);
-                    var edge2MapKey = _this.getMapKey(geometry.vertices[f.b], geometry.vertices[f.c]);
-                    if (!_this.map[edge2MapKey]) {
-                        _this.map[edge2MapKey] = [];
-                    }
-                    _this.map[edge2MapKey].push(f);
-                    var edge3MapKey = _this.getMapKey(geometry.vertices[f.c], geometry.vertices[f.a]);
-                    if (!_this.map[edge3MapKey]) {
-                        _this.map[edge3MapKey] = [];
-                    }
-                    _this.map[edge3MapKey].push(f);
+                    [
+                        { vertex1Index: f.a, vertex2Index: f.b },
+                        { vertex1Index: f.b, vertex2Index: f.c },
+                        { vertex1Index: f.c, vertex2Index: f.a }
+                    ].forEach(function (edge, index) {
+                        var edge1MapKey = _this.getMapKey(geometry.vertices[edge.vertex1Index], geometry.vertices[edge.vertex2Index]);
+                        if (!_this.map[edge1MapKey]) {
+                            _this.map[edge1MapKey] = {};
+                        }
+                        var entry = _this.map[edge1MapKey];
+                        if (!entry.face1) {
+                            entry.face1 = f;
+                            entry.face1SharedEdge = index;
+                        }
+                        else if (!entry.face2) {
+                            entry.face2 = f;
+                            entry.face2SharedEdge = index;
+                        }
+                        else {
+                            console.log('More than two faces share an edge.  Unable to smooth more than two faces.  This additional face has been ignored. map key: ' + edge1MapKey);
+                        }
+                    });
                 });
             };
             // returns any faces that contain an edge defined by the given vertices
             EdgeMap.prototype.getFaces = function (vertex1, vertex2) {
-                return this.map[this.getMapKey(vertex1, vertex2)];
+                var foundContainer = this.map[this.getMapKey(vertex1, vertex2)];
+                if (foundContainer && foundContainer.face1 && foundContainer.face2) {
+                    return foundContainer;
+                }
+                else {
+                    return;
+                }
             };
             // returns an order-independent string key based on all six data points of the two vertices
             EdgeMap.prototype.getMapKey = function (vertexA, vertexB) {
@@ -72,12 +92,12 @@ var LdrawVisualizer;
                         }
                     }
                 }
-                return [Math.round(first.x * this.epsilon),
-                    Math.round(first.y * this.epsilon),
-                    Math.round(first.z * this.epsilon),
-                    Math.round(second.x * this.epsilon),
-                    Math.round(second.y * this.epsilon),
-                    Math.round(second.z * this.epsilon)].join('|');
+                return [Math.round(first.x * this.precision),
+                    Math.round(first.y * this.precision),
+                    Math.round(first.z * this.precision),
+                    Math.round(second.x * this.precision),
+                    Math.round(second.y * this.precision),
+                    Math.round(second.z * this.precision)].join('|');
             };
             return EdgeMap;
         })();

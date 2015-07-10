@@ -19,9 +19,9 @@ var LdrawVisualizer;
                 ldrawFiles.unshift(ldconfig);
                 // render each file provided
                 ldrawFiles.forEach(function (ldrawFile) {
-                    var partGeometries = _this.render(ldrawFile);
+                    var partInfo = _this.render(ldrawFile);
                     // loop through all of the parts
-                    partGeometries.forEach(function (geometries) {
+                    partInfo.partGeometries.forEach(function (geometries) {
                         // for each part, loop through all of colors used in this part.
                         // similarly-colored geometries within a part as rendered as a unit for optimization purposes.
                         // prop is color code
@@ -53,11 +53,61 @@ var LdrawVisualizer;
                                     legoMaterial.transparent = true;
                                     legoMaterial.opacity = color.alpha / 255;
                                 }
+                                var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
                                 // reverse the X and Y axes to match three.js's axis scheme
-                                combinedGeom.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1)));
-                                // create smooth shading where possible
+                                combinedGeom.applyMatrix(scaleMatrix);
+                                // create smooth shading where possible, based on faces that share edges and have an optional line defined on that edge
                                 combinedGeom.mergeVertices();
-                                //combinedGeom.computeVertexNormals(true);
+                                combinedGeom.computeFaceNormals();
+                                var edgeMap = new Renderer.EdgeMap();
+                                edgeMap.addGeometry(combinedGeom);
+                                partInfo.optionalLines.forEach(function (optLine) {
+                                    var adjacentFaces = edgeMap.getFaces(optLine.vertex1.clone().applyMatrix4(scaleMatrix), optLine.vertex2.clone().applyMatrix4(scaleMatrix));
+                                    if (adjacentFaces) {
+                                        console.log('adjacent face');
+                                        var newNormal = adjacentFaces.face1.normal.add(adjacentFaces.face2.normal).normalize();
+                                        switch (adjacentFaces.face1SharedEdge) {
+                                            case Renderer.Face3Edge.AB:
+                                                adjacentFaces.face1.vertexNormals[0] = newNormal;
+                                                adjacentFaces.face1.vertexNormals[1] = newNormal;
+                                                adjacentFaces.face1.vertexNormals[2] = adjacentFaces.face1.normal;
+                                                break;
+                                            case Renderer.Face3Edge.BC:
+                                                adjacentFaces.face1.vertexNormals[0] = adjacentFaces.face1.normal;
+                                                adjacentFaces.face1.vertexNormals[1] = newNormal;
+                                                adjacentFaces.face1.vertexNormals[2] = newNormal;
+                                                break;
+                                            case Renderer.Face3Edge.CA:
+                                                adjacentFaces.face1.vertexNormals[0] = newNormal;
+                                                adjacentFaces.face1.vertexNormals[1] = adjacentFaces.face1.normal;
+                                                adjacentFaces.face1.vertexNormals[2] = newNormal;
+                                                break;
+                                        }
+                                        switch (adjacentFaces.face2SharedEdge) {
+                                            case Renderer.Face3Edge.AB:
+                                                adjacentFaces.face2.vertexNormals[0] = newNormal;
+                                                adjacentFaces.face2.vertexNormals[1] = newNormal;
+                                                adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
+                                                break;
+                                            case Renderer.Face3Edge.BC:
+                                                adjacentFaces.face2.vertexNormals[0] = adjacentFaces.face2.normal;
+                                                adjacentFaces.face2.vertexNormals[1] = newNormal;
+                                                adjacentFaces.face2.vertexNormals[2] = newNormal;
+                                                break;
+                                            case Renderer.Face3Edge.CA:
+                                                adjacentFaces.face2.vertexNormals[0] = newNormal;
+                                                adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
+                                                adjacentFaces.face2.vertexNormals[2] = newNormal;
+                                                break;
+                                        }
+                                    }
+                                    // var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+                                    // var lineGeometry = new THREE.Geometry();
+                                    // lineGeometry.vertices.push(optLine.vertex1.clone().applyMatrix4(scaleMatrix));
+                                    // lineGeometry.vertices.push(optLine.vertex2.clone().applyMatrix4(scaleMatrix))
+                                    // var line = new THREE.Line(lineGeometry, lineMaterial);
+                                    // scene.add(line);
+                                });
                                 scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
                             }
                         }
@@ -65,18 +115,19 @@ var LdrawVisualizer;
                 });
                 console.log('Creating three.js model and adding to scene took ' + (Date.now() - startTime) + 'ms');
             };
-            LdrawFileRenderer.render = function (ldrawFile, colorCode, fullMatrix, geometries, hasAncestorPart) {
+            LdrawFileRenderer.render = function (ldrawFile, colorCode, fullMatrix, partRenderingInfo, hasAncestorPart) {
                 if (colorCode === void 0) { colorCode = 0; }
                 if (fullMatrix === void 0) { fullMatrix = new THREE.Matrix4(); }
-                if (geometries === void 0) { geometries = [{}]; }
+                if (partRenderingInfo === void 0) { partRenderingInfo = { optionalLines: [], partGeometries: [] }; }
                 if (hasAncestorPart === void 0) { hasAncestorPart = false; }
                 var ldrawOrgLine = ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.LDrawOrg; })[0];
-                if (ldrawOrgLine
+                if ((ldrawOrgLine
                     && (ldrawOrgLine.PartType === LdrawVisualizer.Parser.Lines.LdrawOrgPartType.Part || ldrawOrgLine.PartType === LdrawVisualizer.Parser.Lines.LdrawOrgPartType.Unofficial_Part)
-                    && !hasAncestorPart) {
+                    && !hasAncestorPart)
+                    || partRenderingInfo.partGeometries.length === 0) {
                     // We're starting a new part, push an empty object onto our list of part geometries
                     // to keep track of this part's contents
-                    geometries.push({
+                    partRenderingInfo.partGeometries.push({
                         matrix: fullMatrix
                     });
                     // this flags future parts not to act as their own part, but rather as a subpart - 
@@ -84,7 +135,7 @@ var LdrawVisualizer;
                     hasAncestorPart = true;
                 }
                 // the geometry array we'll be adding to through the rest of this process
-                var currentGeometries = geometries[geometries.length - 1];
+                var currentGeometries = partRenderingInfo.partGeometries[partRenderingInfo.partGeometries.length - 1];
                 // Import all color definitions
                 ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.Colour; })
                     .forEach(function (l) {
@@ -125,6 +176,19 @@ var LdrawVisualizer;
                     }
                     currentGeometries[triColorCode].push(geometry);
                 });
+                // add all optional lines to our PartRenderingInfo object
+                ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.OptionalLine; })
+                    .forEach(function (l) {
+                    var optLine = l;
+                    var point1 = new THREE.Vector3(optLine.Point1.X, optLine.Point1.Y, optLine.Point1.Z);
+                    var point2 = new THREE.Vector3(optLine.Point2.X, optLine.Point2.Y, optLine.Point2.Z);
+                    point1.applyMatrix4(fullMatrix);
+                    point2.applyMatrix4(fullMatrix);
+                    partRenderingInfo.optionalLines.push({
+                        vertex1: point1,
+                        vertex2: point2
+                    });
+                });
                 // Render all subfiles
                 ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.SubFileReference; })
                     .forEach(function (l) {
@@ -132,21 +196,21 @@ var LdrawVisualizer;
                     var useCurrentColor = subfileLine.Color === 16 || subfileLine.Color === 24;
                     var newColorCode = useCurrentColor ? colorCode : subfileLine.Color;
                     if (subfileLine.Filename === 'stud.dat') {
-                        LdrawFileRenderer.renderStud(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
+                        LdrawFileRenderer.renderStud(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), partRenderingInfo, hasAncestorPart);
                     }
                     else {
-                        LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), geometries, hasAncestorPart);
+                        LdrawFileRenderer.render(subfileLine.File, newColorCode, fullMatrix.clone().multiply(LdrawFileRenderer.getMatrix4(subfileLine)), partRenderingInfo, hasAncestorPart);
                     }
                 });
-                return geometries;
+                return partRenderingInfo;
             };
             // replace all studs with a higher-quality cylinder with a logo
-            LdrawFileRenderer.renderStud = function (ldrawFile, colorCode, fullMatrix, geometries, hasAncestorPart) {
+            LdrawFileRenderer.renderStud = function (ldrawFile, colorCode, fullMatrix, partRenderingInfo, hasAncestorPart) {
                 if (colorCode === void 0) { colorCode = 0; }
                 if (fullMatrix === void 0) { fullMatrix = new THREE.Matrix4(); }
-                if (geometries === void 0) { geometries = [{}]; }
+                if (partRenderingInfo === void 0) { partRenderingInfo = { optionalLines: [], partGeometries: [] }; }
                 if (hasAncestorPart === void 0) { hasAncestorPart = false; }
-                var currentGeometries = geometries[geometries.length - 1];
+                var currentGeometries = partRenderingInfo.partGeometries[partRenderingInfo.partGeometries.length - 1];
                 // 25 might be overkill, ratchet down in the future if it causes performance issues
                 var studGeometry = new THREE.CylinderGeometry(6, 6, 8, 25, 1, false);
                 studGeometry.applyMatrix(fullMatrix);
@@ -174,7 +238,7 @@ var LdrawVisualizer;
                     currentGeometries[colorCode] = [];
                 }
                 currentGeometries[colorCode].push(studGeometry);
-                return geometries;
+                return partRenderingInfo;
             };
             // extracts the transform matrix from the subfile reference line as a THREE.Matrix4
             LdrawFileRenderer.getMatrix4 = function (ref) {
@@ -184,7 +248,7 @@ var LdrawVisualizer;
             };
             // controls how large the seams are between each part.
             // 1.0 = no seams, seems get larger as this number decreases
-            LdrawFileRenderer.seamWidthFactor = .993;
+            LdrawFileRenderer.seamWidthFactor = 1; //.993;
             return LdrawFileRenderer;
         })();
         Renderer.LdrawFileRenderer = LdrawFileRenderer;

@@ -1,0 +1,13 @@
+0 Untitled
+0 Name: test.ldr
+0 Author: LDraw
+0 Unofficial Model
+0 ROTATION CENTER 0 0 0 1 "Custom" 
+0 ROTATION CONFIG 0 0
+0 //1 27 0 0 0 -1 0 0 0 0.984808 -0.173648 0 -0.173648 -0.984808 47753.dat
+
+4 27 0 0 0 50 0 0 50 -50 0 0 -50 0
+4 27 50 0 0 70 0 50 70 -50 50 50 -50 0
+5 27 50 0 0 50 -50 0 0 0 0 0 0 0
+
+0
