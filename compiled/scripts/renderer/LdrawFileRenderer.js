@@ -2,7 +2,7 @@
 /// <reference path="../parser/LdrawFile.ts" />
 /// <reference path="../parser/lines/LineTypes.ts" />
 /// <reference path="./ColorLookup.ts" />
-/// <reference path="./EdgeMap.ts" />
+/// <reference path="./VertexToFaceMap.ts" />
 var LdrawVisualizer;
 (function (LdrawVisualizer) {
     var Renderer;
@@ -59,7 +59,7 @@ var LdrawVisualizer;
                                 // create smooth shading where possible, based on faces that share edges and have an optional line defined on that edge
                                 combinedGeom.mergeVertices();
                                 combinedGeom.computeFaceNormals();
-                                var edgeMap = new Renderer.EdgeMap();
+                                var edgeMap = new Renderer.VertexToFaceMap();
                                 edgeMap.addGeometry(combinedGeom);
                                 partInfo.optionalLines.forEach(function (optLine) {
                                     var adjacentFaces = edgeMap.getFaces(optLine.vertex1.clone().applyMatrix4(scaleMatrix), optLine.vertex2.clone().applyMatrix4(scaleMatrix));
@@ -67,34 +67,34 @@ var LdrawVisualizer;
                                         console.log('adjacent face');
                                         var newNormal = adjacentFaces.face1.normal.add(adjacentFaces.face2.normal).normalize();
                                         switch (adjacentFaces.face1SharedEdge) {
-                                            case Renderer.Face3Edge.AB:
+                                            case Renderer.Face3VertexIndex.AB:
                                                 adjacentFaces.face1.vertexNormals[0] = newNormal;
                                                 adjacentFaces.face1.vertexNormals[1] = newNormal;
                                                 adjacentFaces.face1.vertexNormals[2] = adjacentFaces.face1.normal;
                                                 break;
-                                            case Renderer.Face3Edge.BC:
+                                            case Renderer.Face3VertexIndex.BC:
                                                 adjacentFaces.face1.vertexNormals[0] = adjacentFaces.face1.normal;
                                                 adjacentFaces.face1.vertexNormals[1] = newNormal;
                                                 adjacentFaces.face1.vertexNormals[2] = newNormal;
                                                 break;
-                                            case Renderer.Face3Edge.CA:
+                                            case Renderer.Face3VertexIndex.CA:
                                                 adjacentFaces.face1.vertexNormals[0] = newNormal;
                                                 adjacentFaces.face1.vertexNormals[1] = adjacentFaces.face1.normal;
                                                 adjacentFaces.face1.vertexNormals[2] = newNormal;
                                                 break;
                                         }
                                         switch (adjacentFaces.face2SharedEdge) {
-                                            case Renderer.Face3Edge.AB:
+                                            case Renderer.Face3VertexIndex.AB:
                                                 adjacentFaces.face2.vertexNormals[0] = newNormal;
                                                 adjacentFaces.face2.vertexNormals[1] = newNormal;
                                                 adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
                                                 break;
-                                            case Renderer.Face3Edge.BC:
+                                            case Renderer.Face3VertexIndex.BC:
                                                 adjacentFaces.face2.vertexNormals[0] = adjacentFaces.face2.normal;
                                                 adjacentFaces.face2.vertexNormals[1] = newNormal;
                                                 adjacentFaces.face2.vertexNormals[2] = newNormal;
                                                 break;
-                                            case Renderer.Face3Edge.CA:
+                                            case Renderer.Face3VertexIndex.CA:
                                                 adjacentFaces.face2.vertexNormals[0] = newNormal;
                                                 adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
                                                 adjacentFaces.face2.vertexNormals[2] = newNormal;

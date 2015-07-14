@@ -1,4 +1,12 @@
 /// <reference path="../../typings/references.ts" />
+/// <reference path="../Utility.ts" />
+/// <reference path="./VertexMapBase.ts" />
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var LdrawVisualizer;
 (function (LdrawVisualizer) {
     var Renderer;
@@ -9,13 +17,12 @@ var LdrawVisualizer;
             Face3VertexIndex[Face3VertexIndex["C"] = 2] = "C";
         })(Renderer.Face3VertexIndex || (Renderer.Face3VertexIndex = {}));
         var Face3VertexIndex = Renderer.Face3VertexIndex;
-        var VertexToFaceMap = (function () {
+        var VertexToFaceMap = (function (_super) {
+            __extends(VertexToFaceMap, _super);
             function VertexToFaceMap() {
-                // how close the vertices must be to be considered the same point
-                this.precision = 10000;
-                // a map of edge keys to faces.
+                _super.apply(this, arguments);
+                // a map of vertex keys to faces.
                 this.map = {};
-                this.once = true;
             }
             // adds all of the faces in the geometry to the map, indexed by their vertices.
             // note each face will appear in the internal map 3 times, once for each vertex
@@ -49,15 +56,9 @@ var LdrawVisualizer;
                     return this.map[this.getMapKey(vertex)];
                 }
             };
-            // returns a string key based on three vertices of a point
-            VertexToFaceMap.prototype.getMapKey = function (vertex) {
-                return [Math.round(vertex.x * this.precision),
-                    Math.round(vertex.y * this.precision),
-                    Math.round(vertex.z * this.precision)].join('|');
-            };
             return VertexToFaceMap;
-        })();
+        })(Renderer.VertexMapBase);
         Renderer.VertexToFaceMap = VertexToFaceMap;
     })(Renderer = LdrawVisualizer.Renderer || (LdrawVisualizer.Renderer = {}));
 })(LdrawVisualizer || (LdrawVisualizer = {}));
-//# sourceMappingURL=EdgeMap.js.map
+//# sourceMappingURL=VertexToFaceMap.js.map
