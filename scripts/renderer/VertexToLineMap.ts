@@ -18,7 +18,7 @@ module LdrawVisualizer.Renderer {
 		// note that each line will appear in the map twice - once for each point
 		addLine(vertex1: THREE.Vector3, vertex2: THREE.Vector3): void {
 			[vertex1, vertex2].forEach((v) => {
-				var vertexMapKey = this.getMapKey(v);
+				var vertexMapKey = VertexMapBase.GetMapKey(v);
 				this.map[vertexMapKey] = this.map[vertexMapKey] || [];
 				this.map[vertexMapKey].push({
 					vertex1: vertex1,
@@ -29,7 +29,7 @@ module LdrawVisualizer.Renderer {
 		
 		// returns a list of unique lines that contain the given vertex
 		getLines(vertex: THREE.Vector3): Array<OptionalLine> {
-			return this.map[this.getMapKey(<THREE.Vector3>vertex)];
+			return this.map[VertexMapBase.GetMapKey(<THREE.Vector3>vertex)];
 		}
 	}
 }

@@ -6,15 +6,15 @@ var LdrawVisualizer;
     (function (Renderer) {
         var VertexMapBase = (function () {
             function VertexMapBase() {
-                // how close the vertices must be to be considered the same point
-                this.precision = 10000;
             }
             // returns a string key based on three vertices of a point
-            VertexMapBase.prototype.getMapKey = function (vertex) {
+            VertexMapBase.GetMapKey = function (vertex) {
                 return [Math.round(vertex.x * this.precision),
                     Math.round(vertex.y * this.precision),
                     Math.round(vertex.z * this.precision)].join('|');
             };
+            // how close the vertices must be to be considered the same point
+            VertexMapBase.precision = 10000;
             return VertexMapBase;
         })();
         Renderer.VertexMapBase = VertexMapBase;

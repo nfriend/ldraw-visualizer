@@ -23,7 +23,7 @@ module LdrawVisualizer.Renderer {
 		addGeometry(geometry: THREE.Geometry): void {
 			geometry.faces.forEach(f => {
 				[f.a, f.b, f.c].forEach((vertexIndex, index) => {
-					var vertexMapKey = this.getMapKey(geometry.vertices[vertexIndex]);
+					var vertexMapKey = VertexMapBase.GetMapKey(geometry.vertices[vertexIndex]);
 					this.map[vertexMapKey] = this.map[vertexMapKey] || [];
 					this.map[vertexMapKey].push({
 						face: f,
@@ -38,14 +38,17 @@ module LdrawVisualizer.Renderer {
 			if (Utility.isArray(vertex)) {
 				var allFaces: Array<FaceContainer> = [];
 				(<THREE.Vector3[]>vertex).forEach(v => {
-					allFaces.concat(this.map[this.getMapKey(<THREE.Vector3>vertex)]);
+					var faces = this.map[VertexMapBase.GetMapKey(v)];
+					if (faces) {
+						allFaces = allFaces.concat(faces);
+					}
 				});
 				var uniqueFaces = allFaces.filter((value, index, self) => {
 					return self.indexOf(value) === index;
 				});
 				return uniqueFaces;
 			} else {
-				return this.map[this.getMapKey(<THREE.Vector3>vertex)];	
+				return this.map[VertexMapBase.GetMapKey(<THREE.Vector3>vertex)];
 			}
 		}
 	}

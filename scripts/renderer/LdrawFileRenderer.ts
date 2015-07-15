@@ -3,6 +3,7 @@
 /// <reference path="../parser/lines/LineTypes.ts" />
 /// <reference path="./ColorLookup.ts" />
 /// <reference path="./VertexToFaceMap.ts" />
+/// <reference path="./VertexToLineMap.ts" />
 
 module LdrawVisualizer.Renderer {
 	
@@ -82,7 +83,6 @@ module LdrawVisualizer.Renderer {
 							// move the part back to its original location
 							translationVector.multiplyScalar(-1);
 							combinedGeom.applyMatrix(new THREE.Matrix4().makeTranslation(translationVector.x, translationVector.y, translationVector.z));
-							// }
 
 							var color = typeof ColorLookup[prop] !== 'undefined' ? ColorLookup[prop] : { hex: 0, alpha: 255 };
 							var legoMaterial = new THREE.MeshPhongMaterial({ color: color.hex /*Math.floor(Math.random() * 16777215)*/, shading: THREE.SmoothShading, shininess: 100, specular: 0x000000, side: THREE.DoubleSide });
@@ -90,68 +90,105 @@ module LdrawVisualizer.Renderer {
 								legoMaterial.transparent = true;
 								legoMaterial.opacity = color.alpha / 255;
 							}
-
-							var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
-							
-							// reverse the X and Y axes to match three.js's axis scheme
-							combinedGeom.applyMatrix(scaleMatrix);
 							
 							// create smooth shading where possible, based on faces that share edges and have an optional line defined on that edge
 							combinedGeom.mergeVertices();
 							combinedGeom.computeFaceNormals();
 
-							var edgeMap = new VertexToFaceMap();
-							edgeMap.addGeometry(combinedGeom);
+							var faceMap = new VertexToFaceMap();
+							faceMap.addGeometry(combinedGeom);
+
+							var lineMap = new VertexToLineMap();
+							partInfo.optionalLines.forEach(optLine => {
+								lineMap.addLine(optLine.vertex1, optLine.vertex2);
+							});
+
+							combinedGeom.faces.forEach(face => {
+								[face.a, face.b, face.c].forEach((v, index) => {
+									var vertexNormalWasSet = false;
+									var vertexKey = VertexMapBase.GetMapKey(combinedGeom.vertices[v]);
+									if (vertexKey === '500000|-500000|0') {
+										console.log();
+									}
+									
+									var vertex: THREE.Vector3 = combinedGeom.vertices[v];
+									var matchingLines = lineMap.getLines(vertex);
+									if (matchingLines) {
+										var allLineVertices = matchingLines.map(l => l.vertex1).concat(matchingLines.map(l => l.vertex2));
+										var matchingFaces = faceMap.getFaces(allLineVertices);
+										if (matchingFaces) {
+											var normal = new THREE.Vector3();
+											matchingFaces.forEach(matchingFace => {
+												normal.add(matchingFace.face.normal);
+											});
+											face.vertexNormals[index] = normal.normalize();
+											vertexNormalWasSet = true;
+										}
+									}
+									
+									if (!vertexNormalWasSet) {
+										face.vertexNormals[index] = face.normal;
+									}
+								});
+							});
+
+							//console.log(alreadyProcessedVertices);
+
+							// partInfo.optionalLines.forEach(optLine => {
+							// 	var adjacentFaces = faceMap.getFaces(optLine.vertex1.clone().applyMatrix4(scaleMatrix), optLine.vertex2.clone().applyMatrix4(scaleMatrix));
+							// 	if (adjacentFaces) {
+							// 		console.log('adjacent face');
+							// 		var newNormal = adjacentFaces.face1.normal.add(adjacentFaces.face2.normal).normalize();
+
+							// 		switch (adjacentFaces.face1SharedEdge) {
+							// 			case Face3VertexIndex.AB:
+							// 				adjacentFaces.face1.vertexNormals[0] = newNormal;
+							// 				adjacentFaces.face1.vertexNormals[1] = newNormal;
+							// 				adjacentFaces.face1.vertexNormals[2] = adjacentFaces.face1.normal;
+							// 				break;
+							// 			case Face3VertexIndex.BC:
+							// 				adjacentFaces.face1.vertexNormals[0] = adjacentFaces.face1.normal;
+							// 				adjacentFaces.face1.vertexNormals[1] = newNormal;
+							// 				adjacentFaces.face1.vertexNormals[2] = newNormal;
+							// 				break;
+							// 			case Face3VertexIndex.CA:
+							// 				adjacentFaces.face1.vertexNormals[0] = newNormal;
+							// 				adjacentFaces.face1.vertexNormals[1] = adjacentFaces.face1.normal;
+							// 				adjacentFaces.face1.vertexNormals[2] = newNormal;
+							// 				break;
+							// 		}
+
+							// 		switch (adjacentFaces.face2SharedEdge) {
+							// 			case Face3VertexIndex.AB:
+							// 				adjacentFaces.face2.vertexNormals[0] = newNormal;
+							// 				adjacentFaces.face2.vertexNormals[1] = newNormal;
+							// 				adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
+							// 				break;
+							// 			case Face3VertexIndex.BC:
+							// 				adjacentFaces.face2.vertexNormals[0] = adjacentFaces.face2.normal;
+							// 				adjacentFaces.face2.vertexNormals[1] = newNormal;
+							// 				adjacentFaces.face2.vertexNormals[2] = newNormal;
+							// 				break;
+							// 			case Face3VertexIndex.CA:
+							// 				adjacentFaces.face2.vertexNormals[0] = newNormal;
+							// 				adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
+							// 				adjacentFaces.face2.vertexNormals[2] = newNormal;
+							// 				break;
+							// 		}
+							// 	}
+							
+							var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
+							
+							// reverse the X and Y axes to match three.js's axis scheme
+							combinedGeom.applyMatrix(scaleMatrix);
 
 							partInfo.optionalLines.forEach(optLine => {
-								var adjacentFaces = edgeMap.getFaces(optLine.vertex1.clone().applyMatrix4(scaleMatrix), optLine.vertex2.clone().applyMatrix4(scaleMatrix));
-								if (adjacentFaces) {
-									console.log('adjacent face');
-									var newNormal = adjacentFaces.face1.normal.add(adjacentFaces.face2.normal).normalize();
-
-									switch (adjacentFaces.face1SharedEdge) {
-										case Face3VertexIndex.AB:
-											adjacentFaces.face1.vertexNormals[0] = newNormal;
-											adjacentFaces.face1.vertexNormals[1] = newNormal;
-											adjacentFaces.face1.vertexNormals[2] = adjacentFaces.face1.normal;
-											break;
-										case Face3VertexIndex.BC:
-											adjacentFaces.face1.vertexNormals[0] = adjacentFaces.face1.normal;
-											adjacentFaces.face1.vertexNormals[1] = newNormal;
-											adjacentFaces.face1.vertexNormals[2] = newNormal;
-											break;
-										case Face3VertexIndex.CA:
-											adjacentFaces.face1.vertexNormals[0] = newNormal;
-											adjacentFaces.face1.vertexNormals[1] = adjacentFaces.face1.normal;
-											adjacentFaces.face1.vertexNormals[2] = newNormal;
-											break;
-									}
-
-									switch (adjacentFaces.face2SharedEdge) {
-										case Face3VertexIndex.AB:
-											adjacentFaces.face2.vertexNormals[0] = newNormal;
-											adjacentFaces.face2.vertexNormals[1] = newNormal;
-											adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
-											break;
-										case Face3VertexIndex.BC:
-											adjacentFaces.face2.vertexNormals[0] = adjacentFaces.face2.normal;
-											adjacentFaces.face2.vertexNormals[1] = newNormal;
-											adjacentFaces.face2.vertexNormals[2] = newNormal;
-											break;
-										case Face3VertexIndex.CA:
-											adjacentFaces.face2.vertexNormals[0] = newNormal;
-											adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
-											adjacentFaces.face2.vertexNormals[2] = newNormal;
-											break;
-									}
-								}
-
-								// var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-								// var lineGeometry = new THREE.Geometry();
-								// lineGeometry.vertices.push(optLine.vertex1.clone().applyMatrix4(scaleMatrix));
-								// lineGeometry.vertices.push(optLine.vertex2.clone().applyMatrix4(scaleMatrix))
-								// var line = new THREE.Line(lineGeometry, lineMaterial);
-								// scene.add(line);
+								var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+								var lineGeometry = new THREE.Geometry();
+								lineGeometry.vertices.push(optLine.vertex1.clone().applyMatrix4(scaleMatrix));
+								lineGeometry.vertices.push(optLine.vertex2.clone().applyMatrix4(scaleMatrix))
+								var line = new THREE.Line(lineGeometry, lineMaterial);
+								scene.add(line);
 							});
 
 							scene.add(new THREE.Mesh(combinedGeom, legoMaterial));

@@ -30,7 +30,7 @@ var LdrawVisualizer;
                 var _this = this;
                 geometry.faces.forEach(function (f) {
                     [f.a, f.b, f.c].forEach(function (vertexIndex, index) {
-                        var vertexMapKey = _this.getMapKey(geometry.vertices[vertexIndex]);
+                        var vertexMapKey = Renderer.VertexMapBase.GetMapKey(geometry.vertices[vertexIndex]);
                         _this.map[vertexMapKey] = _this.map[vertexMapKey] || [];
                         _this.map[vertexMapKey].push({
                             face: f,
@@ -45,7 +45,10 @@ var LdrawVisualizer;
                 if (LdrawVisualizer.Utility.isArray(vertex)) {
                     var allFaces = [];
                     vertex.forEach(function (v) {
-                        allFaces.concat(_this.map[_this.getMapKey(vertex)]);
+                        var faces = _this.map[Renderer.VertexMapBase.GetMapKey(v)];
+                        if (faces) {
+                            allFaces = allFaces.concat(faces);
+                        }
                     });
                     var uniqueFaces = allFaces.filter(function (value, index, self) {
                         return self.indexOf(value) === index;
@@ -53,7 +56,7 @@ var LdrawVisualizer;
                     return uniqueFaces;
                 }
                 else {
-                    return this.map[this.getMapKey(vertex)];
+                    return this.map[Renderer.VertexMapBase.GetMapKey(vertex)];
                 }
             };
             return VertexToFaceMap;
