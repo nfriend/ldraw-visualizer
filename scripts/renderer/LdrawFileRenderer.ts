@@ -132,56 +132,12 @@ module LdrawVisualizer.Renderer {
 								});
 							});
 
-							//console.log(alreadyProcessedVertices);
-
-							// partInfo.optionalLines.forEach(optLine => {
-							// 	var adjacentFaces = faceMap.getFaces(optLine.vertex1.clone().applyMatrix4(scaleMatrix), optLine.vertex2.clone().applyMatrix4(scaleMatrix));
-							// 	if (adjacentFaces) {
-							// 		console.log('adjacent face');
-							// 		var newNormal = adjacentFaces.face1.normal.add(adjacentFaces.face2.normal).normalize();
-
-							// 		switch (adjacentFaces.face1SharedEdge) {
-							// 			case Face3VertexIndex.AB:
-							// 				adjacentFaces.face1.vertexNormals[0] = newNormal;
-							// 				adjacentFaces.face1.vertexNormals[1] = newNormal;
-							// 				adjacentFaces.face1.vertexNormals[2] = adjacentFaces.face1.normal;
-							// 				break;
-							// 			case Face3VertexIndex.BC:
-							// 				adjacentFaces.face1.vertexNormals[0] = adjacentFaces.face1.normal;
-							// 				adjacentFaces.face1.vertexNormals[1] = newNormal;
-							// 				adjacentFaces.face1.vertexNormals[2] = newNormal;
-							// 				break;
-							// 			case Face3VertexIndex.CA:
-							// 				adjacentFaces.face1.vertexNormals[0] = newNormal;
-							// 				adjacentFaces.face1.vertexNormals[1] = adjacentFaces.face1.normal;
-							// 				adjacentFaces.face1.vertexNormals[2] = newNormal;
-							// 				break;
-							// 		}
-
-							// 		switch (adjacentFaces.face2SharedEdge) {
-							// 			case Face3VertexIndex.AB:
-							// 				adjacentFaces.face2.vertexNormals[0] = newNormal;
-							// 				adjacentFaces.face2.vertexNormals[1] = newNormal;
-							// 				adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
-							// 				break;
-							// 			case Face3VertexIndex.BC:
-							// 				adjacentFaces.face2.vertexNormals[0] = adjacentFaces.face2.normal;
-							// 				adjacentFaces.face2.vertexNormals[1] = newNormal;
-							// 				adjacentFaces.face2.vertexNormals[2] = newNormal;
-							// 				break;
-							// 			case Face3VertexIndex.CA:
-							// 				adjacentFaces.face2.vertexNormals[0] = newNormal;
-							// 				adjacentFaces.face2.vertexNormals[1] = adjacentFaces.face2.normal;
-							// 				adjacentFaces.face2.vertexNormals[2] = newNormal;
-							// 				break;
-							// 		}
-							// 	}
-							
-							var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
 							
 							// reverse the X and Y axes to match three.js's axis scheme
+							var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
 							combinedGeom.applyMatrix(scaleMatrix);
 
+							// show optional lines
 							partInfo.optionalLines.forEach(optLine => {
 								var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
 								var lineGeometry = new THREE.Geometry();
