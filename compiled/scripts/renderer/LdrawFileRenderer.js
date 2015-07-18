@@ -4,6 +4,7 @@
 /// <reference path="./ColorLookup.ts" />
 /// <reference path="./VertexToFaceMap.ts" />
 /// <reference path="./VertexToLineMap.ts" />
+/// <reference path="./Smoother.ts" />
 var LdrawVisualizer;
 (function (LdrawVisualizer) {
     var Renderer;
@@ -53,41 +54,7 @@ var LdrawVisualizer;
                                     legoMaterial.transparent = true;
                                     legoMaterial.opacity = color.alpha / 255;
                                 }
-                                // create smooth shading where possible, based on faces that share edges and have an optional line defined on that edge
-                                combinedGeom.mergeVertices();
-                                combinedGeom.computeFaceNormals();
-                                var faceMap = new Renderer.VertexToFaceMap();
-                                faceMap.addGeometry(combinedGeom);
-                                var lineMap = new Renderer.VertexToLineMap();
-                                partInfo.optionalLines.forEach(function (optLine) {
-                                    lineMap.addLine(optLine.vertex1, optLine.vertex2);
-                                });
-                                combinedGeom.faces.forEach(function (face) {
-                                    [face.a, face.b, face.c].forEach(function (v, index) {
-                                        var vertexNormalWasSet = false;
-                                        var vertexKey = Renderer.VertexMapBase.GetMapKey(combinedGeom.vertices[v]);
-                                        if (vertexKey === '500000|-500000|0') {
-                                            console.log();
-                                        }
-                                        var vertex = combinedGeom.vertices[v];
-                                        var matchingLines = lineMap.getLines(vertex);
-                                        if (matchingLines) {
-                                            var allLineVertices = matchingLines.map(function (l) { return l.vertex1; }).concat(matchingLines.map(function (l) { return l.vertex2; }));
-                                            var matchingFaces = faceMap.getFaces(allLineVertices);
-                                            if (matchingFaces) {
-                                                var normal = new THREE.Vector3();
-                                                matchingFaces.forEach(function (matchingFace) {
-                                                    normal.add(matchingFace.face.normal);
-                                                });
-                                                face.vertexNormals[index] = normal.normalize();
-                                                vertexNormalWasSet = true;
-                                            }
-                                        }
-                                        if (!vertexNormalWasSet) {
-                                            face.vertexNormals[index] = face.normal;
-                                        }
-                                    });
-                                });
+                                Renderer.Smoother.Smooth(combinedGeom, partInfo.optionalLines);
                                 // reverse the X and Y axes to match three.js's axis scheme
                                 var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
                                 combinedGeom.applyMatrix(scaleMatrix);
@@ -100,7 +67,12 @@ var LdrawVisualizer;
                                     var line = new THREE.Line(lineGeometry, lineMaterial);
                                     scene.add(line);
                                 });
-                                scene.add(new THREE.Mesh(combinedGeom, legoMaterial));
+                                var mesh = new THREE.Mesh(combinedGeom, legoMaterial);
+                                scene.add(mesh);
+                                // var faceEdges = new THREE.FaceNormalsHelper(mesh, 8, 0x0000ff, 3);
+                                // scene.add(faceEdges);
+                                var vertexEdges = new THREE.VertexNormalsHelper(mesh, 3.5, 0xff0000, 3);
+                                scene.add(vertexEdges);
                             }
                         }
                     });

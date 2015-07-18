@@ -68,13 +68,13 @@ var LdrawVisualizer;
         }
         LdrawVisualizer.Renderer.LdrawFileRenderer.Render(scene, ldconfig, ldrawFiles);
         // lights
-        var directionalLight = new THREE.DirectionalLight(0xCCCCCC);
-        directionalLight.position.set(1, .6, -.2);
-        scene.add(directionalLight);
-        directionalLight = new THREE.DirectionalLight(0xCCCCCC);
-        directionalLight.position.set(-1, -1.5, 1.7);
-        scene.add(directionalLight);
-        directionalLight = new THREE.DirectionalLight(0xFFFFFF);
+        // var directionalLight = new THREE.DirectionalLight(0xCCCCCC);
+        // directionalLight.position.set(1, .6, -.2);
+        // scene.add(directionalLight);
+        // directionalLight = new THREE.DirectionalLight(0xCCCCCC);
+        // directionalLight.position.set(-1, -1.5, 1.7);
+        // scene.add(directionalLight);
+        var directionalLight = new THREE.DirectionalLight(0xFFFFFF);
         directionalLight.position.set(-20, 70, -60);
         scene.add(directionalLight);
         var ambientLight = new THREE.AmbientLight(0x333333);
