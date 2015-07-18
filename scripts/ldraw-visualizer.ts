@@ -10,7 +10,7 @@ module LdrawVisualizer {
 	var camera, controls, scene, renderer, ldrawFiles: LdrawFile[] = [], ldconfig: LdrawFile;
 	var showAxes = false;
 	var isDev = document.location.hostname === 'localhost' || document.location.hostname === '127.0.0.1';
-	var modelToGet = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : encodeURIComponent(isDev ? 'test2.ldr' : '31018.mpd');
+	var modelToGet = window.location.hash ? window.location.hash.replace(/^#\/?/, '') : encodeURIComponent(isDev ? '31018.mpd' : '31018.mpd');
 
 	// begin the scene with a model showing
 	$.ajax({

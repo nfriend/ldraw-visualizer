@@ -6,71 +6,95 @@
 
 module LdrawVisualizer.Renderer {
 	export class Smoother {
-		static Smooth(geometry: THREE.Geometry, optionalLines: Array<{ vertex1: THREE.Vector3, vertex2: THREE.Vector3 }>): void {
 
-			geometry.computeVertexNormals();
-			geometry.mergeVertices();
-			geometry.computeFaceNormals();
+		private edgeMap = new EdgeMap();
 
-			var faceMap = new VertexToFaceMap();
-			faceMap.addGeometry(geometry);
+		public CombineAndSmooth(geometries: Array<THREE.Geometry>,
+			optionalLines: Array<{ vertex1: THREE.Vector3, vertex2: THREE.Vector3 }>,
+			quadLines: { [lineKey: string]: any }): THREE.Geometry {
 
-			var edgeMap = new EdgeMap();
-			edgeMap.addGeometry(geometry);
+			this.edgeMap.addGeometries(geometries);
 
-			var verticesToBeAveraged: { [vertexKey: string]: Array<THREE.Face3> } = {};
-			optionalLines.forEach(optLine => {
-				var sharedFaces = edgeMap.getFaces(optLine.vertex1, optLine.vertex2);
-				var mapKey1 = this.getMapKey(optLine.vertex1);
-				var mapKey2 = this.getMapKey(optLine.vertex2);
-				
-				if (!verticesToBeAveraged[mapKey1]) {
-					verticesToBeAveraged[mapKey1] = [];
-				}
-				if (!verticesToBeAveraged[mapKey2]) {
-					verticesToBeAveraged[mapKey2] = [];
-				}
-				
-				verticesToBeAveraged[mapKey1].push(sharedFaces.face1);
-				verticesToBeAveraged[mapKey1].push(sharedFaces.face2);
-				verticesToBeAveraged[mapKey2].push(sharedFaces.face1);
-				verticesToBeAveraged[mapKey2].push(sharedFaces.face2);
+			var optionalLineLookup: { [key: string]: { vertex1: THREE.Vector3, vertex2: THREE.Vector3 } } = {};
+			optionalLines.forEach(ol => {
+				optionalLineLookup[this.edgeMap.GetMapKey(ol.vertex1, ol.vertex2)] = ol;
 			});
-			
-			for (var vertexKey in verticesToBeAveraged) {
-				if (verticesToBeAveraged.hasOwnProperty(vertexKey)) {
-					var facesToBeAveraged = verticesToBeAveraged[vertexKey];
-					
-					var normal = new THREE.Vector3();
-					facesToBeAveraged.forEach(face => {
-						normal.add(face.normal);
-					});
-					normal.normalize();
-					
-					if (normal.x > 1 || normal.x < -1 || normal.y > 1 || normal.y < -1 || normal.z > 1 || normal.z < -1) {
-						console.log('greater');
-					}
-					
-					console.log(normal.x, normal.y, normal.z);
-					
-					var allFacesAtCurrentVertex = faceMap.getFacesFromVertexKey(vertexKey);
-					// TODO: eliminate all faces from this array that weren't part of the original
-					// facesToBeAveraged Array AND aren't an original face's quad sibling
-					allFacesAtCurrentVertex.forEach(faceContainer => {
-						faceContainer.face.vertexNormals[faceContainer.matchingVertexIndex] = normal;
-					});
-				}
+
+			var geometryGroups: Array<Array<THREE.Geometry>> = [];
+
+			while (geometries.length > 0) {
+				var currentGeometry = geometries.shift();
+				var currentGeometryGroup = this.getConnectedGeometriesGroup(currentGeometry, optionalLineLookup);
+				currentGeometryGroup.forEach(geom => {
+					geometries.splice(geometries.indexOf(geom), 1);
+				});
+
+				geometryGroups.push(currentGeometryGroup);
 			}
+
+			var emptyMatrix = new THREE.Matrix4();
+			var smoothedGeometries: Array<THREE.Geometry> = [];
+
+			geometryGroups.forEach(group => {
+				var combinedGeom = new THREE.Geometry();
+				group.forEach(geom => {
+					combinedGeom.merge(geom, emptyMatrix, 0);
+				});
+				combinedGeom.computeFaceNormals();
+				combinedGeom.mergeVertices();
+				combinedGeom.computeVertexNormals();
+				smoothedGeometries.push(combinedGeom);
+			});
+
+			var finalGeom = new THREE.Geometry();
+			smoothedGeometries.forEach(geom => {
+				finalGeom.merge(geom, emptyMatrix, 0);
+			});
+
+			return finalGeom;	
+			
+			// for (var lineKey in quadLines) {
+			// 	if (quadLines.hasOwnProperty(lineKey)) {
+			// 		var quadHalves = edgeMap.getFacesFromLineKey(lineKey);
+			// 		if (quadHalves) {
+			// 			quadHalves.face1.vertexNormals[0] = quadHalves.face2.vertexNormals[2].clone();
+			// 			quadHalves.face2.vertexNormals[0] = quadHalves.face1.vertexNormals[2].clone();
+			// 		}
+			// 	}
+			// }
 		}
 		
-		// how close the vertices must be to be considered the same point
-		private static precision: number = 10000;
-		
-		// returns a string key based on three vertices of a point
-		private static getMapKey(vertex: THREE.Vector3): string {
-			return [Math.round(vertex.x * this.precision),
-				Math.round(vertex.y * this.precision),
-				Math.round(vertex.z * this.precision)].join('|');
+		// returns all geometries connected to the provided geometry.
+		// the returned array includes the provided geometry.
+		private getConnectedGeometriesGroup(
+			geometry: THREE.Geometry,
+			optionalLineLookup: { [key: string]: { vertex1: THREE.Vector3, vertex2: THREE.Vector3 } },
+			geometries: Array<THREE.Geometry> = []
+			): Array<THREE.Geometry> {
+
+			geometries.push(geometry);
+
+			geometry.faces.forEach(f => {
+				[
+					{ vertex1: f.a, vertex2: f.b },
+					{ vertex1: f.b, vertex2: f.c },
+					{ vertex1: f.c, vertex2: f.a },
+				].forEach(edge => {
+					var edgeKey = this.edgeMap.GetMapKey(geometry.vertices[edge.vertex1], geometry.vertices[edge.vertex2]);
+					if (optionalLineLookup[edgeKey]) {
+						var adjacentGeometries = this.edgeMap.getGeometriesFromKey(edgeKey);
+						if (adjacentGeometries.length > 0) {
+							adjacentGeometries.forEach(geom => {
+								if (geometries.indexOf(geom) === -1) {
+									this.getConnectedGeometriesGroup(geom, optionalLineLookup, geometries);
+								}
+							});
+						}
+					}
+				});
+			});
+
+			return geometries;
 		}
 	}
 }

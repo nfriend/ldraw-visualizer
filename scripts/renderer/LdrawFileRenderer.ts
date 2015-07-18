@@ -5,6 +5,7 @@
 /// <reference path="./VertexToFaceMap.ts" />
 /// <reference path="./VertexToLineMap.ts" />
 /// <reference path="./Smoother.ts" />
+/// <reference path="./EdgeMap.ts" />
 
 module LdrawVisualizer.Renderer {
 	
@@ -26,9 +27,13 @@ module LdrawVisualizer.Renderer {
 			vertex1: THREE.Vector3,
 			vertex2: THREE.Vector3
 		}>;
+		quadLines: { [lineKey: string]: any };
 	}
 
 	export class LdrawFileRenderer {
+		
+		// temp
+		static edgeMap = new EdgeMap();
 		
 		// TEMPORARY to allow for stud logos
 		static scene: THREE.Scene;
@@ -60,15 +65,11 @@ module LdrawVisualizer.Renderer {
 					for (var prop in geometries) {
 						if (geometries.hasOwnProperty(prop) && prop != 'matrix') {
 							
-							// combine all similarly-colored geometries of this part into a single geometry
-							var combinedGeom = new THREE.Geometry();
-							geometries[prop].forEach(g => {
-								combinedGeom.merge(g, new THREE.Matrix4(), 0);
-							});
+							var smoother = new Smoother();
+							var combinedGeom = smoother.CombineAndSmooth(geometries[prop], partInfo.optionalLines, partInfo.quadLines);
 
 							// create seams
 							var translationVector = new THREE.Vector3();
-							// if (geometries.matrix) {
 								
 							// decompose this matrix into its translation, rotation, and scaling portions
 							geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
@@ -92,30 +93,28 @@ module LdrawVisualizer.Renderer {
 								legoMaterial.opacity = color.alpha / 255;
 							}
 							
-							Smoother.Smooth(combinedGeom, partInfo.optionalLines);
-							
 							// reverse the X and Y axes to match three.js's axis scheme
 							var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
 							combinedGeom.applyMatrix(scaleMatrix);
 
 							// show optional lines
-							partInfo.optionalLines.forEach(optLine => {
-								var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-								var lineGeometry = new THREE.Geometry();
-								lineGeometry.vertices.push(optLine.vertex1.clone().applyMatrix4(scaleMatrix));
-								lineGeometry.vertices.push(optLine.vertex2.clone().applyMatrix4(scaleMatrix))
-								var line = new THREE.Line(lineGeometry, lineMaterial);
-								scene.add(line);
-							});
+							// partInfo.optionalLines.forEach(optLine => {
+							// 	var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+							// 	var lineGeometry = new THREE.Geometry();
+							// 	lineGeometry.vertices.push(optLine.vertex1.clone().applyMatrix4(scaleMatrix));
+							// 	lineGeometry.vertices.push(optLine.vertex2.clone().applyMatrix4(scaleMatrix))
+							// 	var line = new THREE.Line(lineGeometry, lineMaterial);
+							// 	scene.add(line);
+							// });
 							
 							var mesh = new THREE.Mesh(combinedGeom, legoMaterial) 
 							scene.add(mesh);
 							
-							// var faceEdges = new THREE.FaceNormalsHelper(mesh, 8, 0x0000ff, 3);
+							// var faceEdges = new THREE.FaceNormalsHelper(mesh, 3.5, 0x0000ff, 3);
 							// scene.add(faceEdges);
 							
-							var vertexEdges = new THREE.VertexNormalsHelper(mesh, 3.5, 0xff0000, 3);
-							scene.add(vertexEdges);
+							// var vertexEdges = new THREE.VertexNormalsHelper(mesh, 3.5, 0xff0000, 3);
+							// scene.add(vertexEdges);
 						}
 					}
 				});
@@ -127,7 +126,7 @@ module LdrawVisualizer.Renderer {
 		private static render(ldrawFile: LdrawFile,
 			colorCode: number = 0,
 			fullMatrix: THREE.Matrix4 = new THREE.Matrix4(),
-			partRenderingInfo: PartRenderingInfo = { optionalLines: [], partGeometries: [] },
+			partRenderingInfo: PartRenderingInfo = { optionalLines: [], partGeometries: [], quadLines: {} },
 			hasAncestorPart: boolean = false): PartRenderingInfo {
 
 			var ldrawOrgLine = <Parser.Lines.LdrawOrgMETALine>ldrawFile.Lines.filter(l => l.LineType === Parser.Lines.LdrawFileLineType.LDrawOrg)[0];
@@ -180,6 +179,8 @@ module LdrawVisualizer.Renderer {
 					geometry.faces.push(new THREE.Face3(0, 1, 2));
 					geometry.faces.push(new THREE.Face3(2, 3, 0));
 					geometry.computeFaceNormals();
+					
+					partRenderingInfo.quadLines[this.edgeMap.GetMapKey(geometry.vertices[0], geometry.vertices[2])] = true;
 
 					var quadColorCode = quadLine.Color == 16 ? colorCode : quadLine.Color;
 					if (!(quadColorCode in currentGeometries)) {
@@ -251,7 +252,7 @@ module LdrawVisualizer.Renderer {
 		private static renderStud(ldrawFile: LdrawFile,
 			colorCode: number = 0,
 			fullMatrix: THREE.Matrix4 = new THREE.Matrix4(),
-			partRenderingInfo: PartRenderingInfo = { optionalLines: [], partGeometries: [] },
+			partRenderingInfo: PartRenderingInfo = { optionalLines: [], partGeometries: [], quadLines: {} },
 			hasAncestorPart: boolean = false): PartRenderingInfo {
 
 			var currentGeometries = partRenderingInfo.partGeometries[partRenderingInfo.partGeometries.length - 1];

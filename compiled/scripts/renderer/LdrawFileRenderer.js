@@ -5,6 +5,7 @@
 /// <reference path="./VertexToFaceMap.ts" />
 /// <reference path="./VertexToLineMap.ts" />
 /// <reference path="./Smoother.ts" />
+/// <reference path="./EdgeMap.ts" />
 var LdrawVisualizer;
 (function (LdrawVisualizer) {
     var Renderer;
@@ -29,14 +30,10 @@ var LdrawVisualizer;
                         // prop is color code
                         for (var prop in geometries) {
                             if (geometries.hasOwnProperty(prop) && prop != 'matrix') {
-                                // combine all similarly-colored geometries of this part into a single geometry
-                                var combinedGeom = new THREE.Geometry();
-                                geometries[prop].forEach(function (g) {
-                                    combinedGeom.merge(g, new THREE.Matrix4(), 0);
-                                });
+                                var smoother = new Renderer.Smoother();
+                                var combinedGeom = smoother.CombineAndSmooth(geometries[prop], partInfo.optionalLines, partInfo.quadLines);
                                 // create seams
                                 var translationVector = new THREE.Vector3();
-                                // if (geometries.matrix) {
                                 // decompose this matrix into its translation, rotation, and scaling portions
                                 geometries.matrix.decompose(translationVector, new THREE.Quaternion(), new THREE.Vector3());
                                 // reverse the translation matrix and apply it to the combined geometries,
@@ -54,25 +51,20 @@ var LdrawVisualizer;
                                     legoMaterial.transparent = true;
                                     legoMaterial.opacity = color.alpha / 255;
                                 }
-                                Renderer.Smoother.Smooth(combinedGeom, partInfo.optionalLines);
                                 // reverse the X and Y axes to match three.js's axis scheme
                                 var scaleMatrix = new THREE.Matrix4().scale(new THREE.Vector3(-1, -1, 1));
                                 combinedGeom.applyMatrix(scaleMatrix);
                                 // show optional lines
-                                partInfo.optionalLines.forEach(function (optLine) {
-                                    var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-                                    var lineGeometry = new THREE.Geometry();
-                                    lineGeometry.vertices.push(optLine.vertex1.clone().applyMatrix4(scaleMatrix));
-                                    lineGeometry.vertices.push(optLine.vertex2.clone().applyMatrix4(scaleMatrix));
-                                    var line = new THREE.Line(lineGeometry, lineMaterial);
-                                    scene.add(line);
-                                });
+                                // partInfo.optionalLines.forEach(optLine => {
+                                // 	var lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+                                // 	var lineGeometry = new THREE.Geometry();
+                                // 	lineGeometry.vertices.push(optLine.vertex1.clone().applyMatrix4(scaleMatrix));
+                                // 	lineGeometry.vertices.push(optLine.vertex2.clone().applyMatrix4(scaleMatrix))
+                                // 	var line = new THREE.Line(lineGeometry, lineMaterial);
+                                // 	scene.add(line);
+                                // });
                                 var mesh = new THREE.Mesh(combinedGeom, legoMaterial);
                                 scene.add(mesh);
-                                // var faceEdges = new THREE.FaceNormalsHelper(mesh, 8, 0x0000ff, 3);
-                                // scene.add(faceEdges);
-                                var vertexEdges = new THREE.VertexNormalsHelper(mesh, 3.5, 0xff0000, 3);
-                                scene.add(vertexEdges);
                             }
                         }
                     });
@@ -80,9 +72,10 @@ var LdrawVisualizer;
                 console.log('Creating three.js model and adding to scene took ' + (Date.now() - startTime) + 'ms');
             };
             LdrawFileRenderer.render = function (ldrawFile, colorCode, fullMatrix, partRenderingInfo, hasAncestorPart) {
+                var _this = this;
                 if (colorCode === void 0) { colorCode = 0; }
                 if (fullMatrix === void 0) { fullMatrix = new THREE.Matrix4(); }
-                if (partRenderingInfo === void 0) { partRenderingInfo = { optionalLines: [], partGeometries: [] }; }
+                if (partRenderingInfo === void 0) { partRenderingInfo = { optionalLines: [], partGeometries: [], quadLines: {} }; }
                 if (hasAncestorPart === void 0) { hasAncestorPart = false; }
                 var ldrawOrgLine = ldrawFile.Lines.filter(function (l) { return l.LineType === LdrawVisualizer.Parser.Lines.LdrawFileLineType.LDrawOrg; })[0];
                 if ((ldrawOrgLine
@@ -119,6 +112,7 @@ var LdrawVisualizer;
                     geometry.faces.push(new THREE.Face3(0, 1, 2));
                     geometry.faces.push(new THREE.Face3(2, 3, 0));
                     geometry.computeFaceNormals();
+                    partRenderingInfo.quadLines[_this.edgeMap.GetMapKey(geometry.vertices[0], geometry.vertices[2])] = true;
                     var quadColorCode = quadLine.Color == 16 ? colorCode : quadLine.Color;
                     if (!(quadColorCode in currentGeometries)) {
                         currentGeometries[quadColorCode] = [];
@@ -172,7 +166,7 @@ var LdrawVisualizer;
             LdrawFileRenderer.renderStud = function (ldrawFile, colorCode, fullMatrix, partRenderingInfo, hasAncestorPart) {
                 if (colorCode === void 0) { colorCode = 0; }
                 if (fullMatrix === void 0) { fullMatrix = new THREE.Matrix4(); }
-                if (partRenderingInfo === void 0) { partRenderingInfo = { optionalLines: [], partGeometries: [] }; }
+                if (partRenderingInfo === void 0) { partRenderingInfo = { optionalLines: [], partGeometries: [], quadLines: {} }; }
                 if (hasAncestorPart === void 0) { hasAncestorPart = false; }
                 var currentGeometries = partRenderingInfo.partGeometries[partRenderingInfo.partGeometries.length - 1];
                 // 25 might be overkill, ratchet down in the future if it causes performance issues
@@ -210,6 +204,8 @@ var LdrawVisualizer;
                 var newMatrix = new THREE.Matrix4().set(m[0][0], m[0][1], m[0][2], ref.Coordinates.X, m[1][0], m[1][1], m[1][2], ref.Coordinates.Y, m[2][0], m[2][1], m[2][2], ref.Coordinates.Z, 0, 0, 0, 1);
                 return newMatrix;
             };
+            // temp
+            LdrawFileRenderer.edgeMap = new Renderer.EdgeMap();
             // controls how large the seams are between each part.
             // 1.0 = no seams, seems get larger as this number decreases
             LdrawFileRenderer.seamWidthFactor = 1; //.993;

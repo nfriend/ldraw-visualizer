@@ -9,61 +9,78 @@ var LdrawVisualizer;
     (function (Renderer) {
         var Smoother = (function () {
             function Smoother() {
+                this.edgeMap = new Renderer.EdgeMap();
             }
-            Smoother.Smooth = function (geometry, optionalLines) {
+            Smoother.prototype.CombineAndSmooth = function (geometries, optionalLines, quadLines) {
                 var _this = this;
-                geometry.computeVertexNormals();
-                geometry.mergeVertices();
-                geometry.computeFaceNormals();
-                var faceMap = new Renderer.VertexToFaceMap();
-                faceMap.addGeometry(geometry);
-                var edgeMap = new Renderer.EdgeMap();
-                edgeMap.addGeometry(geometry);
-                var verticesToBeAveraged = {};
-                optionalLines.forEach(function (optLine) {
-                    var sharedFaces = edgeMap.getFaces(optLine.vertex1, optLine.vertex2);
-                    var mapKey1 = _this.getMapKey(optLine.vertex1);
-                    var mapKey2 = _this.getMapKey(optLine.vertex2);
-                    if (!verticesToBeAveraged[mapKey1]) {
-                        verticesToBeAveraged[mapKey1] = [];
-                    }
-                    if (!verticesToBeAveraged[mapKey2]) {
-                        verticesToBeAveraged[mapKey2] = [];
-                    }
-                    verticesToBeAveraged[mapKey1].push(sharedFaces.face1);
-                    verticesToBeAveraged[mapKey1].push(sharedFaces.face2);
-                    verticesToBeAveraged[mapKey2].push(sharedFaces.face1);
-                    verticesToBeAveraged[mapKey2].push(sharedFaces.face2);
+                this.edgeMap.addGeometries(geometries);
+                var optionalLineLookup = {};
+                optionalLines.forEach(function (ol) {
+                    optionalLineLookup[_this.edgeMap.GetMapKey(ol.vertex1, ol.vertex2)] = ol;
                 });
-                for (var vertexKey in verticesToBeAveraged) {
-                    if (verticesToBeAveraged.hasOwnProperty(vertexKey)) {
-                        var facesToBeAveraged = verticesToBeAveraged[vertexKey];
-                        var normal = new THREE.Vector3();
-                        facesToBeAveraged.forEach(function (face) {
-                            normal.add(face.normal);
-                        });
-                        normal.normalize();
-                        if (normal.x > 1 || normal.x < -1 || normal.y > 1 || normal.y < -1 || normal.z > 1 || normal.z < -1) {
-                            console.log('greater');
-                        }
-                        console.log(normal.x, normal.y, normal.z);
-                        var allFacesAtCurrentVertex = faceMap.getFacesFromVertexKey(vertexKey);
-                        // TODO: eliminate all faces from this array that weren't part of the original
-                        // facesToBeAveraged Array AND aren't an original face's quad sibling
-                        allFacesAtCurrentVertex.forEach(function (faceContainer) {
-                            faceContainer.face.vertexNormals[faceContainer.matchingVertexIndex] = normal;
-                        });
-                    }
+                var geometryGroups = [];
+                while (geometries.length > 0) {
+                    var currentGeometry = geometries.shift();
+                    var currentGeometryGroup = this.getConnectedGeometriesGroup(currentGeometry, optionalLineLookup);
+                    currentGeometryGroup.forEach(function (geom) {
+                        geometries.splice(geometries.indexOf(geom), 1);
+                    });
+                    geometryGroups.push(currentGeometryGroup);
                 }
+                var emptyMatrix = new THREE.Matrix4();
+                var smoothedGeometries = [];
+                geometryGroups.forEach(function (group) {
+                    var combinedGeom = new THREE.Geometry();
+                    group.forEach(function (geom) {
+                        combinedGeom.merge(geom, emptyMatrix, 0);
+                    });
+                    combinedGeom.computeFaceNormals();
+                    combinedGeom.mergeVertices();
+                    combinedGeom.computeVertexNormals();
+                    smoothedGeometries.push(combinedGeom);
+                });
+                var finalGeom = new THREE.Geometry();
+                smoothedGeometries.forEach(function (geom) {
+                    finalGeom.merge(geom, emptyMatrix, 0);
+                });
+                return finalGeom;
+                // for (var lineKey in quadLines) {
+                // 	if (quadLines.hasOwnProperty(lineKey)) {
+                // 		var quadHalves = edgeMap.getFacesFromLineKey(lineKey);
+                // 		if (quadHalves) {
+                // 			quadHalves.face1.vertexNormals[0] = quadHalves.face2.vertexNormals[2].clone();
+                // 			quadHalves.face2.vertexNormals[0] = quadHalves.face1.vertexNormals[2].clone();
+                // 		}
+                // 	}
+                // }
             };
-            // returns a string key based on three vertices of a point
-            Smoother.getMapKey = function (vertex) {
-                return [Math.round(vertex.x * this.precision),
-                    Math.round(vertex.y * this.precision),
-                    Math.round(vertex.z * this.precision)].join('|');
+            // returns all geometries connected to the provided geometry.
+            // the returned array includes the provided geometry.
+            Smoother.prototype.getConnectedGeometriesGroup = function (geometry, optionalLineLookup, geometries) {
+                var _this = this;
+                if (geometries === void 0) { geometries = []; }
+                geometries.push(geometry);
+                geometry.faces.forEach(function (f) {
+                    [
+                        { vertex1: f.a, vertex2: f.b },
+                        { vertex1: f.b, vertex2: f.c },
+                        { vertex1: f.c, vertex2: f.a },
+                    ].forEach(function (edge) {
+                        var edgeKey = _this.edgeMap.GetMapKey(geometry.vertices[edge.vertex1], geometry.vertices[edge.vertex2]);
+                        if (optionalLineLookup[edgeKey]) {
+                            var adjacentGeometries = _this.edgeMap.getGeometriesFromKey(edgeKey);
+                            if (adjacentGeometries.length > 0) {
+                                adjacentGeometries.forEach(function (geom) {
+                                    if (geometries.indexOf(geom) === -1) {
+                                        _this.getConnectedGeometriesGroup(geom, optionalLineLookup, geometries);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                });
+                return geometries;
             };
-            // how close the vertices must be to be considered the same point
-            Smoother.precision = 10000;
             return Smoother;
         })();
         Renderer.Smoother = Smoother;
