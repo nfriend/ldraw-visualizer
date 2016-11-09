@@ -1,5 +1,4 @@
 # ldraw-visualizer
 A in-browser LEGO model viewer, built using three.js and LDraw part files.
 
-Example:
-<img src="motorcycle.png" />
+<img src="motorcyle.png" />
